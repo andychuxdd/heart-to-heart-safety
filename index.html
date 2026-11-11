@@ -170,7 +170,7 @@ let snoozeTimer = null;
 
 function formatDateWithWeekday(dateStr) {
   const date = new Date(dateStr);
-  if (isNaN(date)) return dateStr;
+  if (isNaN(date.getTime())) return dateStr;
   const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
   const month = date.getMonth() + 1;
   const day = date.getDate();
@@ -180,8 +180,10 @@ function formatDateWithWeekday(dateStr) {
 
 function getMonthKey(dateStr) {
   const date = new Date(dateStr);
-  if (isNaN(date)) return "";
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+  if (isNaN(date.getTime())) return "";
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  return `${y}-${m}`;
 }
 
 function showModal() {
@@ -304,8 +306,11 @@ async function loadData() {
       if (!time || !type) return;
 
       const date = time.split(" ")[0].split("T")[0];
+      const monthKey = getMonthKey(date);
+      if (!monthKey) return;
+      
       if (!allDaily[date]) allDaily[date] = { fall: 0, care: 0 };
-      months.add(getMonthKey(date));
+      months.add(monthKey);
 
       if (type === "FALL_ON") fallOn = true;
       if (type === "FALL_OFF") fallOn = false;
@@ -346,10 +351,14 @@ async function loadData() {
     const current = select.value;
     select.innerHTML = '<option value="all">全部月份</option>';
     Array.from(months).sort().reverse().forEach(m => {
-      const [year, month] = m.split("-");
+      if (!m || !m.includes("-")) return;
+      const parts = m.split("-");
+      const year = parts[0];
+      const month = parseInt(parts[1]);
+      if (isNaN(month)) return;
       const opt = document.createElement("option");
       opt.value = m;
-      opt.textContent = `${year}年${parseInt(month)}月`;
+      opt.textContent = `${year}年${month}月`;
       select.appendChild(opt);
     });
     if (current && months.has(current)) select.value = current;
