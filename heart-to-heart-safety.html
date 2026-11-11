@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>心連心智能平安鐘</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { 
+    font-family: "Microsoft JhengHei", "PingFang TC", sans-serif; 
+    background: linear-gradient(135deg, #fdf5eb 0%, #fff9f0 100%); 
+    margin: 0; padding: 16px; color: #3a2e20; 
+    min-height: 100vh;
+  }
+  .container { max-width: 800px; margin: 0 auto; }
+  .header { text-align: center; margin-bottom: 24px; position: relative; }
+  h1 { color: #e85d2c; margin: 0; font-size: 28px; }
+  .subtitle { color: #9c8770; margin-top: 4px; }
+  .icon { font-size: 48px; margin-bottom: 8px; }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .card { 
+    background: white; border-radius: 16px; padding: 20px; text-align: center; 
+    box-shadow: 0 4px 12px rgba(232, 93, 44, 0.1); 
+    border: 1px solid rgba(245, 199, 124, 0.3);
+  }
+  .card h3 { margin: 0 0 10px; font-size: 16px; color: #9c8770; }
+  .big { font-size: 32px; font-weight: bold; }
+  .on { color: #6f8f71; }
+  .off { color: #9c8770; }
+  .emergency { color: #e85d2c; animation: pulse 1.2s infinite; }
+  @keyframes pulse { 50% { opacity: 0.5; } }
+  .section { 
+    background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06); 
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 12px; text-align: center; }
+  th { background: #f5c77c; color: #3a2e20; }
+  tr:nth-child(even) { background: #fdf5eb; }
+  .footer { text-align: center; color: #9c8770; font-size: 13px; margin-top: 10px; }
+  button { 
+    background: linear-gradient(135deg, #e85d2c, #f5a623); 
+    color: white; border: none; padding: 12px 28px; border-radius: 24px; 
+    font-size: 15px; cursor: pointer; box-shadow: 0 2px 8px rgba(232, 93, 44, 0.3);
+  }
+  button:hover { transform: translateY(-1px); }
+  @media (max-width: 600px) { .cards { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="icon">🧡</div>
+    <h1>心連心智能平安鐘</h1>
+    <div class="subtitle">即時狀態監控</div>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <h3>🔔 跌倒偵測</h3>
+      <div id="fallStatus" class="big">載入中</div>
+    </div>
+    <div class="card">
+      <h3>⚠️ 目前警報</h3>
+      <div id="alarmStatus" class="big">載入中</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 style="margin-top:0; text-align:center;">📈 近 7 日統計</h2>
+    <canvas id="chart" height="220"></canvas>
+  </div>
+
+  <div class="section">
+    <h2 style="margin-top:0;">📋 每日紀錄</h2>
+    <table>
+      <thead><tr><th>日期</th><th>跌倒</th><th>關懷</th></tr></thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <div style="text-align:center; margin: 16px 0;">
+    <button onclick="loadData()">🔄 重新整理</button>
+  </div>
+  <div class="footer" id="updateTime">最後更新：--</div>
+</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbwKVvt7f5cnt1tT3y-iP1VnrzFYCppQoUlpvi3wXMhirXjNW6o2m76M7GgpszvSlITZ/exec";
+
+let chart;
+
+async function loadData() {
+  try {
+    const res = await fetch(API_URL + "?t=" + Date.now());
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+
+    let fallOn = false;
+    let alarming = false;
+    const daily = {};
+
+    data.forEach(item => {
+      const type = (item.type || "").toUpperCase();
+      const time = item.time || "";
+      if (!time || !type) return;
+
+      const date = time.split(" ")[0].split("T")[0];
+      if (!daily[date]) daily[date] = { fall: 0, care: 0 };
+
+      if (type === "FALL_ON") fallOn = true;
+      if (type === "FALL_OFF") fallOn = false;
+      if (type === "EMERGENCY") {
+        alarming = true;
+        daily[date].fall++;
+      }
+      if (type === "CANCEL") alarming = false;
+      if (type === "CARE") daily[date].care++;
+    });
+
+    document.getElementById("fallStatus").textContent = fallOn ? "開啟" : "關閉";
+    document.getElementById("fallStatus").className = "big " + (fallOn ? "on" : "off");
+
+    document.getElementById("alarmStatus").textContent = alarming ? "緊急警報！" : "正常";
+    document.getElementById("alarmStatus").className = "big " + (alarming ? "emergency" : "on");
+
+    const tbody = document.getElementById("tableBody");
+    tbody.innerHTML = "";
+    const dates = Object.keys(daily).sort().reverse().slice(0, 14);
+    dates.forEach(d => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${d}</td><td>${daily[d].fall}</td><td>${daily[d].care}</td>`;
+      tbody.appendChild(tr);
+    });
+
+    const chartDates = dates.slice(0, 7).reverse();
+    if (chart) chart.destroy();
+    chart = new Chart(document.getElementById("chart"), {
+      type: "line",
+      data: {
+        labels: chartDates,
+        datasets: [
+          { 
+            label: "跌倒", 
+            data: chartDates.map(d => daily[d]?.fall || 0), 
+            borderColor: "#e85d2c", 
+            backgroundColor: "rgba(232, 93, 44, 0.1)",
+            tension: 0.3,
+            fill: true,
+            pointRadius: 5,
+            pointBackgroundColor: "#e85d2c"
+          },
+          { 
+            label: "關懷", 
+            data: chartDates.map(d => daily[d]?.care || 0), 
+            borderColor: "#6f8f71", 
+            backgroundColor: "rgba(111, 143, 113, 0.1)",
+            tension: 0.3,
+            fill: true,
+            pointRadius: 5,
+            pointBackgroundColor: "#6f8f71"
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { 
+          legend: { position: "bottom" },
+          tooltip: { mode: "index", intersect: false }
+        },
+        scales: { 
+          y: { beginAtZero: true, ticks: { stepSize: 1 } } 
+        }
+      }
+    });
+
+    document.getElementById("updateTime").textContent = "最後更新：" + new Date().toLocaleTimeString("zh-HK");
+  } catch (e) {
+    document.getElementById("fallStatus").textContent = "讀取失敗";
+    console.error(e);
+  }
+}
+
+loadData();
+setInterval(loadData, 20000);
+</script>
+</body>
+</html>
