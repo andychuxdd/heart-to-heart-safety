@@ -8,468 +8,208 @@
 <style>
   * { box-sizing: border-box; }
   body { 
-    font-family: "Microsoft JhengHei", "PingFang TC", sans-serif; 
-    background: linear-gradient(135deg, #fdf5eb 0%, #fff9f0 100%); 
-    margin: 0; 
-    padding: clamp(8px, 2vw, 20px); 
-    color: #3a2e20; 
-    min-height: 100vh;
+    font-family: "Microsoft JhengHei", sans-serif; 
+    background: #fdf5eb; margin: 0; padding: 12px; color: #3a2e20;
     transition: background 0.3s;
   }
   body.alarm-flash { animation: flashRed 0.5s infinite; }
   body.care-flash { animation: flashGreen 0.5s infinite; }
-  body.fall-flash { animation: flashBlue 0.5s infinite; }
-  @keyframes flashRed {
-    0%, 100% { background: #fdf5eb; }
-    50% { background: #ffcccc; }
-  }
-  @keyframes flashGreen {
-    0%, 100% { background: #fdf5eb; }
-    50% { background: #ccffcc; }
-  }
-  @keyframes flashBlue {
-    0%, 100% { background: #fdf5eb; }
-    50% { background: #cce5ff; }
-  }
-  .container { 
-    max-width: 900px; 
-    margin: 0 auto; 
-    width: 100%;
-  }
-  .header { text-align: center; margin-bottom: clamp(12px, 3vw, 24px); }
-  h1 { 
-    color: #e85d2c; 
-    margin: 0; 
-    font-size: clamp(20px, 5vw, 32px); 
-  }
-  .icon { font-size: clamp(36px, 8vw, 56px); }
-  .filter { text-align: center; margin-bottom: clamp(12px, 2vw, 20px); }
-  select { 
-    padding: clamp(6px, 1.5vw, 10px) clamp(12px, 3vw, 20px); 
-    border-radius: 20px; 
-    border: 1px solid #f5c77c; 
-    font-size: clamp(14px, 3vw, 16px); 
-    background: white; 
-    color: #3a2e20;
-  }
-  .cards { 
-    display: grid; 
-    grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr)); 
-    gap: clamp(8px, 2vw, 16px); 
-    margin-bottom: clamp(12px, 2vw, 20px); 
-  }
-  .card { 
-    background: white; 
-    border-radius: clamp(12px, 2vw, 20px); 
-    padding: clamp(12px, 3vw, 20px); 
-    text-align: center; 
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
-  }
-  .card h3 { 
-    margin: 0 0 clamp(4px, 1vw, 8px); 
-    color: #9c8770; 
-    font-size: clamp(13px, 3vw, 16px); 
-  }
-  .big { 
-    font-size: clamp(20px, 5vw, 32px); 
-    font-weight: bold; 
-  }
+  @keyframes flashRed { 0%,100% { background: #fdf5eb; } 50% { background: #ffcccc; } }
+  @keyframes flashGreen { 0%,100% { background: #fdf5eb; } 50% { background: #ccffcc; } }
+  .container { max-width: 900px; margin: 0 auto; }
+  .header { text-align: center; margin-bottom: 16px; }
+  h1 { color: #e85d2c; margin: 0; }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .card { background: white; border-radius: 16px; padding: 16px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  .card h3 { margin: 0 0 8px; color: #9c8770; font-size: 14px; }
+  .big { font-size: 24px; font-weight: bold; }
   .on { color: #6f8f71; }
   .off { color: #9c8770; }
-  .emergency { color: #e85d2c; animation: pulse 1.2s infinite; }
+  .emergency { color: #e85d2c; animation: pulse 1s infinite; }
   @keyframes pulse { 50% { opacity: 0.5; } }
-  .section { 
-    background: white; 
-    border-radius: clamp(12px, 2vw, 20px); 
-    padding: clamp(12px, 3vw, 20px); 
-    margin-bottom: clamp(12px, 2vw, 20px); 
-    overflow-x: auto;
-  }
-  .section h2 { 
-    font-size: clamp(16px, 4vw, 22px); 
-    margin-top: 0;
-  }
-  table { 
-    width: 100%; 
-    border-collapse: collapse; 
-    min-width: 280px;
-  }
-  th, td { 
-    padding: clamp(8px, 2vw, 12px); 
-    text-align: center; 
-    font-size: clamp(13px, 3vw, 15px); 
-  }
+  .section { background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 10px; text-align: center; }
   th { background: #f5c77c; }
-  button { 
-    background: #e85d2c; 
-    color: white; 
-    border: none; 
-    padding: clamp(10px, 2vw, 14px) clamp(16px, 4vw, 28px); 
-    border-radius: 24px; 
-    cursor: pointer; 
-    margin: 4px; 
-    font-size: clamp(14px, 3vw, 16px);
-  }
-  .btn-care { background: #6f8f71; }
+  button { background: #e85d2c; color: white; border: none; padding: 12px 24px; border-radius: 24px; cursor: pointer; margin: 4px; }
   .btn-cancel { background: #6f8f71; }
   .btn-secondary { background: #9c8770; }
-  .footer { 
-    text-align: center; 
-    color: #9c8770; 
-    font-size: clamp(11px, 2.5vw, 14px); 
-    margin-top: clamp(8px, 2vw, 16px);
-  }
-  .chart-container { 
-    height: clamp(180px, 35vw, 280px); 
-    position: relative;
-  }
-  .modal {
-    display: none; 
-    position: fixed; 
-    top: 0; left: 0; 
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6); 
-    z-index: 1000; 
-    align-items: center; 
-    justify-content: center;
-    padding: 16px;
-  }
+  .footer { text-align: center; color: #9c8770; font-size: 12px; }
+  .chart-container { height: 250px; }
+  select { padding: 8px 16px; border-radius: 20px; border: 1px solid #f5c77c; }
+  .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; }
   .modal.show { display: flex; }
-  .modal-content {
-    background: white; 
-    border-radius: clamp(16px, 3vw, 24px); 
-    padding: clamp(20px, 5vw, 36px); 
-    text-align: center;
-    max-width: 360px; 
-    width: 100%; 
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-  }
-  .modal-content h2 { 
-    margin: 0 0 12px; 
-    font-size: clamp(18px, 4vw, 24px);
-  }
-  .modal-content p {
-    font-size: clamp(14px, 3vw, 16px);
-  }
+  .modal-content { background: white; border-radius: 20px; padding: 32px; text-align: center; max-width: 360px; width: 90%; }
+  .modal-content h2 { margin: 0 0 12px; }
   .modal-content.alarm h2 { color: #e85d2c; }
   .modal-content.care h2 { color: #6f8f71; }
-  .modal-content.fall h2 { color: #4a90d9; }
-  .modal-icon { font-size: clamp(36px, 8vw, 56px); }
-  
-  @media (max-width: 480px) {
-    .cards { grid-template-columns: 1fr 1fr; }
-    .section { padding: 12px; }
-    table { font-size: 13px; }
-  }
-  
-  @media (max-width: 360px) {
-    .cards { grid-template-columns: 1fr; }
-    button { width: 100%; margin: 4px 0; }
-  }
 </style>
 </head>
 <body>
 <div class="container">
   <div class="header">
-    <div class="icon">🧡</div>
+    <div style="font-size:48px;">🧡</div>
     <h1>心連心智能平安鐘</h1>
   </div>
-
-  <div class="filter">
-    <select id="monthFilter" onchange="renderData()">
-      <option value="all">全部月份</option>
-    </select>
+  
+  <div style="text-align:center; margin-bottom:16px;">
+    <select id="monthFilter" onchange="render()"><option value="all">全部月份</option></select>
   </div>
 
   <div class="cards">
-    <div class="card">
-      <h3>🔔 跌倒偵測</h3>
-      <div id="fallStatus" class="big">載入中</div>
-    </div>
-    <div class="card">
-      <h3>⚠️ 目前警報</h3>
-      <div id="alarmStatus" class="big">載入中</div>
-    </div>
+    <div class="card"><h3>🔔 跌倒偵測</h3><div id="fallStatus" class="big">載入中</div></div>
+    <div class="card"><h3>⚠️ 目前警報</h3><div id="alarmStatus" class="big">載入中</div></div>
   </div>
 
   <div class="section">
     <h2 style="text-align:center;">📈 統計</h2>
-    <div class="chart-container">
-      <canvas id="chart"></canvas>
-    </div>
+    <div class="chart-container"><canvas id="chart"></canvas></div>
   </div>
 
   <div class="section">
     <h2>📋 每日紀錄</h2>
-    <table>
-      <thead><tr><th>日期</th><th>跌倒</th><th>關懷</th></tr></thead>
-      <tbody id="tableBody"></tbody>
-    </table>
+    <table><thead><tr><th>日期</th><th>跌倒</th><th>關懷</th></tr></thead><tbody id="tableBody"></tbody></table>
   </div>
 
-  <div style="text-align:center;">
-    <button onclick="loadData()">🔄 重新整理</button>
-  </div>
-  <div class="footer" id="updateTime">最後更新：--</div>
+  <div style="text-align:center;"><button onclick="load()">🔄 重新整理</button></div>
+  <div class="footer" id="updateTime"></div>
 </div>
 
 <div class="modal" id="alarmModal">
   <div class="modal-content alarm">
-    <div class="modal-icon">🚨</div>
+    <div style="font-size:48px;">🚨</div>
     <h2>緊急警報！</h2>
     <p>偵測到跌倒事件，請確認長者狀況。</p>
     <button class="btn-cancel" onclick="confirmCancel()">✅ 確認取消警報</button>
-    <button class="btn-secondary" onclick="closeAlarmModal()">稍後處理</button>
+    <button class="btn-secondary" onclick="closeAlarm()">稍後處理</button>
   </div>
 </div>
 
 <div class="modal" id="careModal">
   <div class="modal-content care">
-    <div class="modal-icon">💚</div>
+    <div style="font-size:48px;">💚</div>
     <h2>收到關懷</h2>
     <p>長者發送了關懷訊號。</p>
-    <button class="btn-care" onclick="closeCareModal()">✅ 知道了</button>
-  </div>
-</div>
-
-<div class="modal" id="fallModal">
-  <div class="modal-content fall">
-    <div class="modal-icon">🔔</div>
-    <h2 id="fallModalTitle">跌倒偵測</h2>
-    <p id="fallModalText">狀態已變更</p>
-    <button class="btn-secondary" onclick="closeFallModal()">✅ 知道了</button>
+    <button class="btn-cancel" onclick="closeCare()">✅ 知道了</button>
   </div>
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycby5rwV7m2NqcHvX2LOL4yPneDHAHX_4OB2mcXwQS1Ed0UPFAcBrYQHWxb9Qswp1ihdrZg/exec";
+const API = "https://script.google.com/macros/s/AKfycbzi-W6qVuU0KA58SYckbRaL4RSSDFcdRP8P57ejqqnfk7U3GyiJb_JU79X-bSskY-o-Iw/exec";
+let chart, daily = {}, months = new Set();
+let lastAlarming = false, lastCareCount = 0;
 
-let chart;
-let allDaily = {};
-let months = new Set();
-let lastFallOn = null;
-let lastAlarming = false;
-let lastCareCount = 0;
-
-function parseDate(timeStr) {
-  if (!timeStr) return "";
-  const match = timeStr.match(/(\w+)\s+(\d+)\s+(\d+)/);
-  if (match) {
-    const monthsMap = { January: "01", February: "02", March: "03", April: "04", May: "05", June: "06", July: "07", August: "08", September: "09", October: "10", November: "11", December: "12" };
-    const month = monthsMap[match[1]] || "01";
-    const day = match[2].padStart(2, "0");
-    const year = match[3];
-    return `${year}-${month}-${day}`;
-  }
-  return "";
+function parseDate(s) {
+  const m = s.match(/(\w+)\s+(\d+)\s+(\d+)/);
+  if (!m) return "";
+  const mon = {January:"01",February:"02",March:"03",April:"04",May:"05",June:"06",July:"07",August:"08",September:"09",October:"10",November:"11",December:"12"};
+  return m[3] + "-" + (mon[m[1]]||"01") + "-" + m[2].padStart(2,"0");
 }
 
-function getMonthKey(dateStr) {
-  if (!dateStr || !dateStr.includes("-")) return "";
-  const parts = dateStr.split("-");
-  if (parts.length < 2) return "";
-  const year = parts[0];
-  const month = parts[1];
-  if (!year || !month || isNaN(parseInt(year)) || isNaN(parseInt(month))) return "";
-  return `${year}-${month}`;
+function weekday(d) {
+  const dt = new Date(d);
+  if (isNaN(dt)) return d;
+  return (dt.getMonth()+1) + "/" + dt.getDate() + " (" + "日一二三四五六"[dt.getDay()] + ")";
 }
 
-function formatWithWeekday(dateStr) {
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return dateStr;
-  const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const weekday = weekdays[date.getDay()];
-  return `${month}/${day} (${weekday})`;
-}
-
-function formatMonthLabel(monthKey) {
-  if (!monthKey || !monthKey.includes("-")) return "";
-  const parts = monthKey.split("-");
-  const year = parts[0];
-  const month = parseInt(parts[1]);
-  if (isNaN(month) || !year) return "";
-  return `${year}年${month}月`;
-}
-
-function showAlarmModal() {
-  document.getElementById("alarmModal").classList.add("show");
-  document.body.classList.add("alarm-flash");
-}
-
-function closeAlarmModal() {
-  document.getElementById("alarmModal").classList.remove("show");
-  document.body.classList.remove("alarm-flash");
-}
-
-function showCareModal() {
-  document.getElementById("careModal").classList.add("show");
-  document.body.classList.add("care-flash");
-}
-
-function closeCareModal() {
-  document.getElementById("careModal").classList.remove("show");
-  document.body.classList.remove("care-flash");
-}
-
-function showFallModal(isOn) {
-  document.getElementById("fallModalTitle").textContent = isOn ? "跌倒偵測已開啟" : "跌倒偵測已關閉";
-  document.getElementById("fallModalText").textContent = isOn ? "系統將自動偵測跌倒事件" : "跌倒偵測功能已暫停";
-  document.getElementById("fallModal").classList.add("show");
-  document.body.classList.add("fall-flash");
-}
-
-function closeFallModal() {
-  document.getElementById("fallModal").classList.remove("show");
-  document.body.classList.remove("fall-flash");
-}
+function showAlarm() { document.getElementById("alarmModal").classList.add("show"); document.body.classList.add("alarm-flash"); }
+function closeAlarm() { document.getElementById("alarmModal").classList.remove("show"); document.body.classList.remove("alarm-flash"); }
+function showCare() { document.getElementById("careModal").classList.add("show"); document.body.classList.add("care-flash"); }
+function closeCare() { document.getElementById("careModal").classList.remove("show"); document.body.classList.remove("care-flash"); }
 
 async function confirmCancel() {
   try {
-    const res = await fetch(API_URL + "?action=cancel&t=" + Date.now());
+    const res = await fetch(API + "?action=cancel&t=" + Date.now());
     const result = await res.json();
     if (result.success) {
-      closeAlarmModal();
+      closeAlarm();
       lastAlarming = false;
       document.getElementById("alarmStatus").textContent = "正常";
       document.getElementById("alarmStatus").className = "big on";
-      setTimeout(loadData, 2000);
+      setTimeout(load, 2000);
     }
-  } catch (e) {
-    alert("取消失敗，請稍後再試");
-    console.error(e);
-  }
+  } catch(e) { alert("取消失敗"); }
 }
 
-function renderData() {
-  const selected = document.getElementById("monthFilter").value;
-  let filteredDates = Object.keys(allDaily).sort().reverse();
-  
-  if (selected !== "all") {
-    filteredDates = filteredDates.filter(d => getMonthKey(d) === selected);
-  }
-
-  const tbody = document.getElementById("tableBody");
-  tbody.innerHTML = "";
-  filteredDates.slice(0, 30).forEach(d => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${formatWithWeekday(d)}</td><td>${allDaily[d].fall}</td><td>${allDaily[d].care}</td>`;
-    tbody.appendChild(tr);
-  });
-
-  const chartDates = filteredDates.slice(0, 14).reverse();
-  if (chart) chart.destroy();
-  chart = new Chart(document.getElementById("chart"), {
-    type: "line",
-    data: {
-      labels: chartDates.map(d => formatWithWeekday(d)),
-      datasets: [
-        { label: "跌倒", data: chartDates.map(d => allDaily[d]?.fall || 0), borderColor: "#e85d2c", tension: 0.3, fill: false },
-        { label: "關懷", data: chartDates.map(d => allDaily[d]?.care || 0), borderColor: "#6f8f71", tension: 0.3, fill: false }
-      ]
-    },
-    options: { 
-      responsive: true, 
-      maintainAspectRatio: false,
-      plugins: { legend: { position: "bottom" } },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            stepSize: 1,
-            callback: function(value) {
-              if (Number.isInteger(value)) return value;
-            }
-          }
-        }
-      }
-    }
-  });
-}
-
-async function loadData() {
+async function load() {
   try {
-    const res = await fetch(API_URL + "?t=" + Date.now());
+    const res = await fetch(API + "?t=" + Date.now());
     const data = await res.json();
+    if (!Array.isArray(data)) throw new Error("not array");
 
-    let fallOn = false;
-    let alarming = false;
-    let totalCare = 0;
-    allDaily = {};
-    months = new Set();
+    let fallOn = false, alarming = false, totalCare = 0;
+    daily = {}; months = new Set();
 
     data.forEach(item => {
-      const type = (item.type || "").toUpperCase();
-      const time = item.time || "";
-      if (!time || !type) return;
-
-      const date = parseDate(time);
-      if (!date) return;
-      
-      const monthKey = getMonthKey(date);
-      if (!monthKey) return;
-      
-      if (!allDaily[date]) allDaily[date] = { fall: 0, care: 0 };
-      months.add(monthKey);
-
+      const type = (item.type||"").toUpperCase();
+      const date = parseDate(item.time||"");
+      if (!date || !type) return;
+      const mk = date.substring(0,7);
+      months.add(mk);
+      if (!daily[date]) daily[date] = {fall:0, care:0};
       if (type === "FALL_ON") fallOn = true;
       if (type === "FALL_OFF") fallOn = false;
-      if (type === "EMERGENCY") {
-        alarming = true;
-        allDaily[date].fall++;
-      }
+      if (type === "EMERGENCY") { alarming = true; daily[date].fall++; }
       if (type === "CANCEL") alarming = false;
-      if (type === "CARE") {
-        allDaily[date].care++;
-        totalCare++;
-      }
+      if (type === "CARE") { daily[date].care++; totalCare++; }
     });
 
     document.getElementById("fallStatus").textContent = fallOn ? "開啟" : "關閉";
     document.getElementById("fallStatus").className = "big " + (fallOn ? "on" : "off");
-    document.getElementById("alarmStatus").textContent = alarming ? "緊急警報！" : "正常";
+    document.getElementById("alarmStatus").textContent = alarming ? "緊急！" : "正常";
     document.getElementById("alarmStatus").className = "big " + (alarming ? "emergency" : "on");
 
-    if (lastFallOn !== null && fallOn !== lastFallOn) {
-      showFallModal(fallOn);
-    }
-    lastFallOn = fallOn;
-
-    if (alarming && !lastAlarming) {
-      showAlarmModal();
-    }
+    if (alarming && !lastAlarming) showAlarm();
     lastAlarming = alarming;
-    if (!alarming) closeAlarmModal();
+    if (!alarming) closeAlarm();
 
-    if (totalCare > lastCareCount && lastCareCount > 0) {
-      showCareModal();
-    }
+    if (totalCare > lastCareCount && lastCareCount > 0) showCare();
     lastCareCount = totalCare;
 
-    const select = document.getElementById("monthFilter");
-    const current = select.value;
-    select.innerHTML = '<option value="all">全部月份</option>';
-    Array.from(months).sort().reverse().forEach(m => {
-      const label = formatMonthLabel(m);
-      if (!label) return;
-      const opt = document.createElement("option");
-      opt.value = m;
-      opt.textContent = label;
-      select.appendChild(opt);
+    const sel = document.getElementById("monthFilter");
+    const cur = sel.value;
+    sel.innerHTML = '<option value="all">全部月份</option>';
+    [...months].sort().reverse().forEach(m => {
+      const [y,mo] = m.split("-");
+      sel.innerHTML += `<option value="${m}">${y}年${parseInt(mo)}月</option>`;
     });
-    if (current && months.has(current)) select.value = current;
+    if (cur) sel.value = cur;
 
-    renderData();
-    document.getElementById("updateTime").textContent = "最後更新：" + new Date().toLocaleTimeString("zh-HK");
-  } catch (e) {
-    document.getElementById("fallStatus").textContent = "讀取失敗";
+    render();
+    document.getElementById("updateTime").textContent = "更新：" + new Date().toLocaleTimeString();
+  } catch(e) {
+    document.getElementById("fallStatus").textContent = "錯誤";
     console.error(e);
   }
 }
 
-loadData();
-setInterval(loadData, 20000);
+function render() {
+  const sel = document.getElementById("monthFilter").value;
+  let dates = Object.keys(daily).sort().reverse();
+  if (sel !== "all") dates = dates.filter(d => d.startsWith(sel));
+
+  const tb = document.getElementById("tableBody");
+  tb.innerHTML = dates.slice(0,30).map(d => 
+    `<tr><td>${weekday(d)}</td><td>${daily[d].fall}</td><td>${daily[d].care}</td></tr>`
+  ).join("");
+
+  const cd = dates.slice(0,14).reverse();
+  if (chart) chart.destroy();
+  chart = new Chart(document.getElementById("chart"), {
+    type: "line",
+    data: {
+      labels: cd.map(d => weekday(d)),
+      datasets: [
+        { label: "跌倒", data: cd.map(d => daily[d]?.fall||0), borderColor: "#e85d2c", tension: 0.3 },
+        { label: "關懷", data: cd.map(d => daily[d]?.care||0), borderColor: "#6f8f71", tension: 0.3 }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+  });
+}
+
+load();
+setInterval(load, 20000);
 </script>
 </body>
 </html>
