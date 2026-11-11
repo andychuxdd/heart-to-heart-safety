@@ -32,6 +32,11 @@
   .container { max-width: 900px; margin: 0 auto; }
   .header { text-align: center; margin-bottom: 20px; }
   h1 { color: #e85d2c; margin: 0; }
+  .filter { text-align: center; margin-bottom: 16px; }
+  select { 
+    padding: 8px 16px; border-radius: 20px; border: 1px solid #f5c77c; 
+    font-size: 15px; background: white; color: #3a2e20;
+  }
   .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
   .card { background: white; border-radius: 16px; padding: 16px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
   .card h3 { margin: 0 0 8px; color: #9c8770; }
@@ -70,6 +75,12 @@
   <div class="header">
     <div style="font-size:48px;">🧡</div>
     <h1>心連心智能平安鐘</h1>
+  </div>
+
+  <div class="filter">
+    <select id="monthFilter" onchange="renderData()">
+      <option value="all">全部月份</option>
+    </select>
   </div>
 
   <div class="cards">
@@ -137,6 +148,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycby5rwV7m2NqcHvX2LOL4yPn
 
 let chart;
 let allDaily = {};
+let months = new Set();
 let lastFallOn = null;
 let lastAlarming = false;
 let lastCareCount = 0;
@@ -145,13 +157,23 @@ function parseDate(timeStr) {
   if (!timeStr) return "";
   const match = timeStr.match(/(\w+)\s+(\d+)\s+(\d+)/);
   if (match) {
-    const months = { January: "01", February: "02", March: "03", April: "04", May: "05", June: "06", July: "07", August: "08", September: "09", October: "10", November: "11", December: "12" };
-    const month = months[match[1]] || "01";
+    const monthsMap = { January: "01", February: "02", March: "03", April: "04", May: "05", June: "06", July: "07", August: "08", September: "09", October: "10", November: "11", December: "12" };
+    const month = monthsMap[match[1]] || "01";
     const day = match[2].padStart(2, "0");
     const year = match[3];
     return `${year}-${month}-${day}`;
   }
-  return timeStr.split(" ")[0];
+  return "";
+}
+
+function getMonthKey(dateStr) {
+  if (!dateStr || !dateStr.includes("-")) return "";
+  const parts = dateStr.split("-");
+  if (parts.length < 2) return "";
+  const year = parts[0];
+  const month = parts[1];
+  if (!year || !month || isNaN(parseInt(year)) || isNaN(parseInt(month))) return "";
+  return `${year}-${month}`;
 }
 
 function formatWithWeekday(dateStr) {
@@ -162,6 +184,15 @@ function formatWithWeekday(dateStr) {
   const day = date.getDate();
   const weekday = weekdays[date.getDay()];
   return `${month}/${day} (${weekday})`;
+}
+
+function formatMonthLabel(monthKey) {
+  if (!monthKey || !monthKey.includes("-")) return "";
+  const parts = monthKey.split("-");
+  const year = parts[0];
+  const month = parseInt(parts[1]);
+  if (isNaN(month) || !year) return "";
+  return `${year}年${month}月`;
 }
 
 function showAlarmModal() {
@@ -213,6 +244,37 @@ async function confirmCancel() {
   }
 }
 
+function renderData() {
+  const selected = document.getElementById("monthFilter").value;
+  let filteredDates = Object.keys(allDaily).sort().reverse();
+  
+  if (selected !== "all") {
+    filteredDates = filteredDates.filter(d => getMonthKey(d) === selected);
+  }
+
+  const tbody = document.getElementById("tableBody");
+  tbody.innerHTML = "";
+  filteredDates.slice(0, 30).forEach(d => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${formatWithWeekday(d)}</td><td>${allDaily[d].fall}</td><td>${allDaily[d].care}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  const chartDates = filteredDates.slice(0, 14).reverse();
+  if (chart) chart.destroy();
+  chart = new Chart(document.getElementById("chart"), {
+    type: "line",
+    data: {
+      labels: chartDates.map(d => formatWithWeekday(d)),
+      datasets: [
+        { label: "跌倒", data: chartDates.map(d => allDaily[d]?.fall || 0), borderColor: "#e85d2c", tension: 0.3, fill: false },
+        { label: "關懷", data: chartDates.map(d => allDaily[d]?.care || 0), borderColor: "#6f8f71", tension: 0.3, fill: false }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+}
+
 async function loadData() {
   try {
     const res = await fetch(API_URL + "?t=" + Date.now());
@@ -222,6 +284,7 @@ async function loadData() {
     let alarming = false;
     let totalCare = 0;
     allDaily = {};
+    months = new Set();
 
     data.forEach(item => {
       const type = (item.type || "").toUpperCase();
@@ -231,7 +294,11 @@ async function loadData() {
       const date = parseDate(time);
       if (!date) return;
       
+      const monthKey = getMonthKey(date);
+      if (!monthKey) return;
+      
       if (!allDaily[date]) allDaily[date] = { fall: 0, care: 0 };
+      months.add(monthKey);
 
       if (type === "FALL_ON") fallOn = true;
       if (type === "FALL_OFF") fallOn = false;
@@ -267,29 +334,20 @@ async function loadData() {
     }
     lastCareCount = totalCare;
 
-    const dates = Object.keys(allDaily).sort().reverse();
-    const tbody = document.getElementById("tableBody");
-    tbody.innerHTML = "";
-    dates.forEach(d => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${formatWithWeekday(d)}</td><td>${allDaily[d].fall}</td><td>${allDaily[d].care}</td>`;
-      tbody.appendChild(tr);
+    const select = document.getElementById("monthFilter");
+    const current = select.value;
+    select.innerHTML = '<option value="all">全部月份</option>';
+    Array.from(months).sort().reverse().forEach(m => {
+      const label = formatMonthLabel(m);
+      if (!label) return;
+      const opt = document.createElement("option");
+      opt.value = m;
+      opt.textContent = label;
+      select.appendChild(opt);
     });
+    if (current && months.has(current)) select.value = current;
 
-    const chartDates = dates.slice(0, 14).reverse();
-    if (chart) chart.destroy();
-    chart = new Chart(document.getElementById("chart"), {
-      type: "line",
-      data: {
-        labels: chartDates.map(d => formatWithWeekday(d)),
-        datasets: [
-          { label: "跌倒", data: chartDates.map(d => allDaily[d]?.fall || 0), borderColor: "#e85d2c", tension: 0.3, fill: false },
-          { label: "關懷", data: chartDates.map(d => allDaily[d]?.care || 0), borderColor: "#6f8f71", tension: 0.3, fill: false }
-        ]
-      },
-      options: { responsive: true, maintainAspectRatio: false }
-    });
-
+    renderData();
     document.getElementById("updateTime").textContent = "最後更新：" + new Date().toLocaleTimeString("zh-HK");
   } catch (e) {
     document.getElementById("fallStatus").textContent = "讀取失敗";
