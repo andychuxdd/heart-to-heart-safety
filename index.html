@@ -7,11 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   * { box-sizing: border-box; }
-  body { 
-    font-family: "Microsoft JhengHei", sans-serif; 
-    background: #fdf5eb; margin: 0; padding: 12px; color: #3a2e20;
-    transition: background 0.3s;
-  }
+  body { font-family: "Microsoft JhengHei", sans-serif; background: #fdf5eb; margin: 0; padding: 12px; color: #3a2e20; transition: background 0.3s; }
   body.alarm-flash { animation: flashRed 0.5s infinite; }
   body.care-flash { animation: flashGreen 0.5s infinite; }
   @keyframes flashRed { 0%,100% { background: #fdf5eb; } 50% { background: #ffcccc; } }
@@ -51,26 +47,21 @@
     <div style="font-size:48px;">🧡</div>
     <h1>心連心智能平安鐘</h1>
   </div>
-  
   <div style="text-align:center; margin-bottom:16px;">
     <select id="monthFilter" onchange="render()"><option value="all">全部月份</option></select>
   </div>
-
   <div class="cards">
     <div class="card"><h3>🔔 跌倒偵測</h3><div id="fallStatus" class="big">載入中</div></div>
     <div class="card"><h3>⚠️ 目前警報</h3><div id="alarmStatus" class="big">載入中</div></div>
   </div>
-
   <div class="section">
     <h2 style="text-align:center;">📈 統計</h2>
     <div class="chart-container"><canvas id="chart"></canvas></div>
   </div>
-
   <div class="section">
     <h2>📋 每日紀錄</h2>
     <table><thead><tr><th>日期</th><th>跌倒</th><th>關懷</th></tr></thead><tbody id="tableBody"></tbody></table>
   </div>
-
   <div style="text-align:center;"><button onclick="load()">🔄 重新整理</button></div>
   <div class="footer" id="updateTime"></div>
 </div>
@@ -97,7 +88,7 @@
 <script>
 const API = "https://script.google.com/macros/s/AKfycbzi-W6qVuU0KA58SYckbRaL4RSSDFcdRP8P57ejqqnfk7U3GyiJb_JU79X-bSskY-o-Iw/exec";
 let chart, daily = {}, months = new Set();
-let lastAlarming = false, lastCareCount = 0;
+let lastAlarming = false, lastCareCount = 0, lastFallOn = null;
 
 function parseDate(s) {
   const m = s.match(/(\w+)\s+(\d+)\s+(\d+)/);
@@ -141,14 +132,15 @@ async function load() {
     daily = {}; months = new Set();
 
     data.forEach(item => {
-      const type = (item.type||"").toUpperCase();
+      const type = (item.type||"").toUpperCase().replace(/_/g, "");
       const date = parseDate(item.time||"");
       if (!date || !type) return;
       const mk = date.substring(0,7);
       months.add(mk);
       if (!daily[date]) daily[date] = {fall:0, care:0};
-      if (type === "FALL_ON") fallOn = true;
-      if (type === "FALL_OFF") fallOn = false;
+      
+      if (type === "FALLON") fallOn = true;
+      if (type === "FALLOFF") fallOn = false;
       if (type === "EMERGENCY") { alarming = true; daily[date].fall++; }
       if (type === "CANCEL") alarming = false;
       if (type === "CARE") { daily[date].care++; totalCare++; }
