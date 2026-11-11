@@ -10,42 +10,86 @@
   body { 
     font-family: "Microsoft JhengHei", "PingFang TC", sans-serif; 
     background: linear-gradient(135deg, #fdf5eb 0%, #fff9f0 100%); 
-    margin: 0; padding: 16px; color: #3a2e20; 
+    margin: 0; padding: 12px; color: #3a2e20; 
     min-height: 100vh;
+    transition: background 0.3s;
   }
-  .container { max-width: 800px; margin: 0 auto; }
-  .header { text-align: center; margin-bottom: 24px; position: relative; }
-  h1 { color: #e85d2c; margin: 0; font-size: 28px; }
-  .subtitle { color: #9c8770; margin-top: 4px; }
-  .icon { font-size: 48px; margin-bottom: 8px; }
-  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  body.alarm-flash { animation: flashRed 0.5s infinite; }
+  body.care-flash { animation: flashGreen 0.5s infinite; }
+  @keyframes flashRed {
+    0%, 100% { background: #fdf5eb; }
+    50% { background: #ffcccc; }
+  }
+  @keyframes flashGreen {
+    0%, 100% { background: #fdf5eb; }
+    50% { background: #ccffcc; }
+  }
+  .container { max-width: 900px; margin: 0 auto; width: 100%; }
+  .header { text-align: center; margin-bottom: 20px; }
+  h1 { color: #e85d2c; margin: 0; font-size: clamp(22px, 5vw, 28px); }
+  .subtitle { color: #9c8770; margin-top: 4px; font-size: clamp(13px, 3vw, 16px); }
+  .icon { font-size: clamp(36px, 8vw, 48px); margin-bottom: 8px; }
+  .filter { text-align: center; margin-bottom: 16px; }
+  select { 
+    padding: 8px 16px; border-radius: 20px; border: 1px solid #f5c77c; 
+    font-size: 15px; background: white; color: #3a2e20;
+  }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
   .card { 
-    background: white; border-radius: 16px; padding: 20px; text-align: center; 
+    background: white; border-radius: 16px; padding: 16px; text-align: center; 
     box-shadow: 0 4px 12px rgba(232, 93, 44, 0.1); 
     border: 1px solid rgba(245, 199, 124, 0.3);
   }
-  .card h3 { margin: 0 0 10px; font-size: 16px; color: #9c8770; }
-  .big { font-size: 32px; font-weight: bold; }
+  .card h3 { margin: 0 0 8px; font-size: clamp(14px, 3.5vw, 16px); color: #9c8770; }
+  .big { font-size: clamp(24px, 6vw, 32px); font-weight: bold; }
   .on { color: #6f8f71; }
   .off { color: #9c8770; }
   .emergency { color: #e85d2c; animation: pulse 1.2s infinite; }
   @keyframes pulse { 50% { opacity: 0.5; } }
   .section { 
-    background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; 
+    background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; 
     box-shadow: 0 4px 12px rgba(0,0,0,0.06); 
+    overflow-x: auto;
   }
-  table { width: 100%; border-collapse: collapse; }
-  th, td { padding: 12px; text-align: center; }
+  table { width: 100%; border-collapse: collapse; min-width: 280px; }
+  th, td { padding: 10px 8px; text-align: center; font-size: clamp(13px, 3vw, 15px); }
   th { background: #f5c77c; color: #3a2e20; }
   tr:nth-child(even) { background: #fdf5eb; }
-  .footer { text-align: center; color: #9c8770; font-size: 13px; margin-top: 10px; }
+  .footer { text-align: center; color: #9c8770; font-size: 12px; margin-top: 10px; }
   button { 
     background: linear-gradient(135deg, #e85d2c, #f5a623); 
-    color: white; border: none; padding: 12px 28px; border-radius: 24px; 
+    color: white; border: none; padding: 12px 24px; border-radius: 24px; 
     font-size: 15px; cursor: pointer; box-shadow: 0 2px 8px rgba(232, 93, 44, 0.3);
+    margin: 4px;
   }
-  button:hover { transform: translateY(-1px); }
-  @media (max-width: 600px) { .cards { grid-template-columns: 1fr; } }
+  .btn-cancel { background: linear-gradient(135deg, #6f8f71, #8fbc8f); }
+  .btn-secondary { background: #9c8770; }
+  .btn-alarm { background: linear-gradient(135deg, #e85d2c, #ff4444); animation: pulse 1s infinite; }
+  .btn-care { background: linear-gradient(135deg, #6f8f71, #4caf50); }
+  .chart-container { position: relative; height: clamp(200px, 40vw, 280px); }
+  .modal {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center;
+  }
+  .modal.show { display: flex; }
+  .modal-content {
+    background: white; border-radius: 20px; padding: 32px; text-align: center;
+    max-width: 360px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    animation: shake 0.5s;
+  }
+  .modal-content.care { animation: none; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+  .modal-content h2 { color: #e85d2c; margin: 0 0 12px; }
+  .modal-content.care h2 { color: #6f8f71; }
+  .modal-content p { color: #3a2e20; margin-bottom: 20px; }
+  @media (max-width: 480px) {
+    .cards { grid-template-columns: 1fr; }
+    .section { padding: 12px; }
+  }
 </style>
 </head>
 <body>
@@ -54,6 +98,12 @@
     <div class="icon">🧡</div>
     <h1>心連心智能平安鐘</h1>
     <div class="subtitle">即時狀態監控</div>
+  </div>
+
+  <div class="filter">
+    <select id="monthFilter" onchange="renderData()">
+      <option value="all">全部月份</option>
+    </select>
   </div>
 
   <div class="cards">
@@ -68,12 +118,14 @@
   </div>
 
   <div class="section">
-    <h2 style="margin-top:0; text-align:center;">📈 近 7 日統計</h2>
-    <canvas id="chart" height="220"></canvas>
+    <h2 style="margin-top:0; text-align:center; font-size: clamp(16px, 4vw, 20px);">📈 統計</h2>
+    <div class="chart-container">
+      <canvas id="chart"></canvas>
+    </div>
   </div>
 
   <div class="section">
-    <h2 style="margin-top:0;">📋 每日紀錄</h2>
+    <h2 style="margin-top:0; font-size: clamp(16px, 4vw, 20px);">📋 每日紀錄</h2>
     <table>
       <thead><tr><th>日期</th><th>跌倒</th><th>關懷</th></tr></thead>
       <tbody id="tableBody"></tbody>
@@ -82,14 +134,157 @@
 
   <div style="text-align:center; margin: 16px 0;">
     <button onclick="loadData()">🔄 重新整理</button>
+    <button id="alarmBtn" class="btn-alarm" style="display:none;" onclick="showModal()">🚨 查看警報</button>
   </div>
   <div class="footer" id="updateTime">最後更新：--</div>
 </div>
 
+<div class="modal" id="alarmModal">
+  <div class="modal-content">
+    <div style="font-size: 48px;">🚨</div>
+    <h2>緊急警報！</h2>
+    <p>偵測到跌倒事件，請確認長者狀況。</p>
+    <button class="btn-cancel" onclick="confirmClear()">✅ 確認消除警報</button>
+    <button class="btn-secondary" onclick="snoozeAlarm()">稍後處理</button>
+  </div>
+</div>
+
+<div class="modal" id="careModal">
+  <div class="modal-content care">
+    <div style="font-size: 48px;">💚</div>
+    <h2>收到關懷</h2>
+    <p>長者發送了關懷訊號。</p>
+    <button class="btn-care" onclick="closeCareModal()">✅ 知道了</button>
+  </div>
+</div>
+
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwKVvt7f5cnt1tT3y-iP1VnrzFYCppQoUlpvi3wXMhirXjNW6o2m76M7GgpszvSlITZ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyyG5uQHMaNBxKHK9GHKzYD9IUCpeUeWDA0-ChDkKTB6RlPKX73cx0oFmTnNE8eeaxs/exec";
 
 let chart;
+let allDaily = {};
+let months = [];
+let isAlarming = false;
+let lastCareCount = 0;
+let snoozeTimer = null;
+
+function formatDateWithWeekday(dateStr) {
+  const date = new Date(dateStr);
+  if (isNaN(date)) return dateStr;
+  const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const weekday = weekdays[date.getDay()];
+  return `${month}/${day} (${weekday})`;
+}
+
+function getMonthKey(dateStr) {
+  const date = new Date(dateStr);
+  if (isNaN(date)) return "";
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function showModal() {
+  document.getElementById("alarmModal").classList.add("show");
+  document.body.classList.add("alarm-flash");
+}
+
+function closeModal() {
+  document.getElementById("alarmModal").classList.remove("show");
+  document.body.classList.remove("alarm-flash");
+}
+
+function showCareModal() {
+  document.getElementById("careModal").classList.add("show");
+  document.body.classList.add("care-flash");
+}
+
+function closeCareModal() {
+  document.getElementById("careModal").classList.remove("show");
+  document.body.classList.remove("care-flash");
+}
+
+function snoozeAlarm() {
+  closeModal();
+  if (snoozeTimer) clearTimeout(snoozeTimer);
+  snoozeTimer = setTimeout(() => {
+    if (isAlarming) showModal();
+  }, 10000);
+}
+
+async function confirmClear() {
+  try {
+    const res = await fetch(API_URL + "?action=cancel&t=" + Date.now());
+    const result = await res.json();
+    if (result.success) {
+      if (snoozeTimer) clearTimeout(snoozeTimer);
+      closeModal();
+      loadData();
+    }
+  } catch (e) {
+    alert("操作失敗，請稍後再試");
+    console.error(e);
+  }
+}
+
+function renderData() {
+  const selected = document.getElementById("monthFilter").value;
+  let filteredDates = Object.keys(allDaily).sort().reverse();
+  
+  if (selected !== "all") {
+    filteredDates = filteredDates.filter(d => getMonthKey(d) === selected);
+  }
+
+  const tbody = document.getElementById("tableBody");
+  tbody.innerHTML = "";
+  filteredDates.slice(0, 30).forEach(d => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${formatDateWithWeekday(d)}</td><td>${allDaily[d].fall}</td><td>${allDaily[d].care}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  const chartDates = filteredDates.slice(0, 14).reverse();
+  if (chart) chart.destroy();
+  chart = new Chart(document.getElementById("chart"), {
+    type: "line",
+    data: {
+      labels: chartDates.map(d => formatDateWithWeekday(d)),
+      datasets: [
+        { 
+          label: "跌倒", 
+          data: chartDates.map(d => allDaily[d]?.fall || 0), 
+          borderColor: "#e85d2c", 
+          backgroundColor: "rgba(232, 93, 44, 0.1)",
+          tension: 0.3,
+          fill: true,
+          pointRadius: 4,
+          pointBackgroundColor: "#e85d2c"
+        },
+        { 
+          label: "關懷", 
+          data: chartDates.map(d => allDaily[d]?.care || 0), 
+          borderColor: "#6f8f71", 
+          backgroundColor: "rgba(111, 143, 113, 0.1)",
+          tension: 0.3,
+          fill: true,
+          pointRadius: 4,
+          pointBackgroundColor: "#6f8f71"
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { 
+        legend: { position: "bottom" },
+        tooltip: { mode: "index", intersect: false }
+      },
+      scales: { 
+        y: { beginAtZero: true, ticks: { stepSize: 1 } } 
+      }
+    }
+  });
+}
 
 async function loadData() {
   try {
@@ -99,7 +294,9 @@ async function loadData() {
 
     let fallOn = false;
     let alarming = false;
-    const daily = {};
+    let totalCare = 0;
+    allDaily = {};
+    months = new Set();
 
     data.forEach(item => {
       const type = (item.type || "").toUpperCase();
@@ -107,16 +304,20 @@ async function loadData() {
       if (!time || !type) return;
 
       const date = time.split(" ")[0].split("T")[0];
-      if (!daily[date]) daily[date] = { fall: 0, care: 0 };
+      if (!allDaily[date]) allDaily[date] = { fall: 0, care: 0 };
+      months.add(getMonthKey(date));
 
       if (type === "FALL_ON") fallOn = true;
       if (type === "FALL_OFF") fallOn = false;
       if (type === "EMERGENCY") {
         alarming = true;
-        daily[date].fall++;
+        allDaily[date].fall++;
       }
       if (type === "CANCEL") alarming = false;
-      if (type === "CARE") daily[date].care++;
+      if (type === "CARE") {
+        allDaily[date].care++;
+        totalCare++;
+      }
     });
 
     document.getElementById("fallStatus").textContent = fallOn ? "開啟" : "關閉";
@@ -125,56 +326,35 @@ async function loadData() {
     document.getElementById("alarmStatus").textContent = alarming ? "緊急警報！" : "正常";
     document.getElementById("alarmStatus").className = "big " + (alarming ? "emergency" : "on");
 
-    const tbody = document.getElementById("tableBody");
-    tbody.innerHTML = "";
-    const dates = Object.keys(daily).sort().reverse().slice(0, 14);
-    dates.forEach(d => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${d}</td><td>${daily[d].fall}</td><td>${daily[d].care}</td>`;
-      tbody.appendChild(tr);
-    });
+    document.getElementById("alarmBtn").style.display = alarming ? "inline-block" : "none";
 
-    const chartDates = dates.slice(0, 7).reverse();
-    if (chart) chart.destroy();
-    chart = new Chart(document.getElementById("chart"), {
-      type: "line",
-      data: {
-        labels: chartDates,
-        datasets: [
-          { 
-            label: "跌倒", 
-            data: chartDates.map(d => daily[d]?.fall || 0), 
-            borderColor: "#e85d2c", 
-            backgroundColor: "rgba(232, 93, 44, 0.1)",
-            tension: 0.3,
-            fill: true,
-            pointRadius: 5,
-            pointBackgroundColor: "#e85d2c"
-          },
-          { 
-            label: "關懷", 
-            data: chartDates.map(d => daily[d]?.care || 0), 
-            borderColor: "#6f8f71", 
-            backgroundColor: "rgba(111, 143, 113, 0.1)",
-            tension: 0.3,
-            fill: true,
-            pointRadius: 5,
-            pointBackgroundColor: "#6f8f71"
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        plugins: { 
-          legend: { position: "bottom" },
-          tooltip: { mode: "index", intersect: false }
-        },
-        scales: { 
-          y: { beginAtZero: true, ticks: { stepSize: 1 } } 
-        }
-      }
-    });
+    if (alarming && !isAlarming) {
+      showModal();
+    }
+    isAlarming = alarming;
+    if (!alarming) {
+      closeModal();
+      if (snoozeTimer) clearTimeout(snoozeTimer);
+    }
 
+    if (totalCare > lastCareCount && lastCareCount > 0) {
+      showCareModal();
+    }
+    lastCareCount = totalCare;
+
+    const select = document.getElementById("monthFilter");
+    const current = select.value;
+    select.innerHTML = '<option value="all">全部月份</option>';
+    Array.from(months).sort().reverse().forEach(m => {
+      const [year, month] = m.split("-");
+      const opt = document.createElement("option");
+      opt.value = m;
+      opt.textContent = `${year}年${parseInt(month)}月`;
+      select.appendChild(opt);
+    });
+    if (current && months.has(current)) select.value = current;
+
+    renderData();
     document.getElementById("updateTime").textContent = "最後更新：" + new Date().toLocaleTimeString("zh-HK");
   } catch (e) {
     document.getElementById("fallStatus").textContent = "讀取失敗";
