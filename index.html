@@ -10,7 +10,9 @@
   body { 
     font-family: "Microsoft JhengHei", "PingFang TC", sans-serif; 
     background: linear-gradient(135deg, #fdf5eb 0%, #fff9f0 100%); 
-    margin: 0; padding: 12px; color: #3a2e20; 
+    margin: 0; 
+    padding: clamp(8px, 2vw, 20px); 
+    color: #3a2e20; 
     min-height: 100vh;
     transition: background 0.3s;
   }
@@ -29,51 +31,147 @@
     0%, 100% { background: #fdf5eb; }
     50% { background: #cce5ff; }
   }
-  .container { max-width: 900px; margin: 0 auto; }
-  .header { text-align: center; margin-bottom: 20px; }
-  h1 { color: #e85d2c; margin: 0; }
-  .filter { text-align: center; margin-bottom: 16px; }
-  select { 
-    padding: 8px 16px; border-radius: 20px; border: 1px solid #f5c77c; 
-    font-size: 15px; background: white; color: #3a2e20;
+  .container { 
+    max-width: 900px; 
+    margin: 0 auto; 
+    width: 100%;
   }
-  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
-  .card { background: white; border-radius: 16px; padding: 16px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-  .card h3 { margin: 0 0 8px; color: #9c8770; }
-  .big { font-size: 28px; font-weight: bold; }
+  .header { text-align: center; margin-bottom: clamp(12px, 3vw, 24px); }
+  h1 { 
+    color: #e85d2c; 
+    margin: 0; 
+    font-size: clamp(20px, 5vw, 32px); 
+  }
+  .icon { font-size: clamp(36px, 8vw, 56px); }
+  .filter { text-align: center; margin-bottom: clamp(12px, 2vw, 20px); }
+  select { 
+    padding: clamp(6px, 1.5vw, 10px) clamp(12px, 3vw, 20px); 
+    border-radius: 20px; 
+    border: 1px solid #f5c77c; 
+    font-size: clamp(14px, 3vw, 16px); 
+    background: white; 
+    color: #3a2e20;
+  }
+  .cards { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr)); 
+    gap: clamp(8px, 2vw, 16px); 
+    margin-bottom: clamp(12px, 2vw, 20px); 
+  }
+  .card { 
+    background: white; 
+    border-radius: clamp(12px, 2vw, 20px); 
+    padding: clamp(12px, 3vw, 20px); 
+    text-align: center; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+  }
+  .card h3 { 
+    margin: 0 0 clamp(4px, 1vw, 8px); 
+    color: #9c8770; 
+    font-size: clamp(13px, 3vw, 16px); 
+  }
+  .big { 
+    font-size: clamp(20px, 5vw, 32px); 
+    font-weight: bold; 
+  }
   .on { color: #6f8f71; }
   .off { color: #9c8770; }
   .emergency { color: #e85d2c; animation: pulse 1.2s infinite; }
   @keyframes pulse { 50% { opacity: 0.5; } }
-  .section { background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; }
-  table { width: 100%; border-collapse: collapse; }
-  th, td { padding: 10px; text-align: center; }
+  .section { 
+    background: white; 
+    border-radius: clamp(12px, 2vw, 20px); 
+    padding: clamp(12px, 3vw, 20px); 
+    margin-bottom: clamp(12px, 2vw, 20px); 
+    overflow-x: auto;
+  }
+  .section h2 { 
+    font-size: clamp(16px, 4vw, 22px); 
+    margin-top: 0;
+  }
+  table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    min-width: 280px;
+  }
+  th, td { 
+    padding: clamp(8px, 2vw, 12px); 
+    text-align: center; 
+    font-size: clamp(13px, 3vw, 15px); 
+  }
   th { background: #f5c77c; }
-  button { background: #e85d2c; color: white; border: none; padding: 12px 24px; border-radius: 24px; cursor: pointer; margin: 4px; }
+  button { 
+    background: #e85d2c; 
+    color: white; 
+    border: none; 
+    padding: clamp(10px, 2vw, 14px) clamp(16px, 4vw, 28px); 
+    border-radius: 24px; 
+    cursor: pointer; 
+    margin: 4px; 
+    font-size: clamp(14px, 3vw, 16px);
+  }
   .btn-care { background: #6f8f71; }
   .btn-cancel { background: #6f8f71; }
   .btn-secondary { background: #9c8770; }
-  .footer { text-align: center; color: #9c8770; font-size: 12px; }
-  .chart-container { height: 250px; }
+  .footer { 
+    text-align: center; 
+    color: #9c8770; 
+    font-size: clamp(11px, 2.5vw, 14px); 
+    margin-top: clamp(8px, 2vw, 16px);
+  }
+  .chart-container { 
+    height: clamp(180px, 35vw, 280px); 
+    position: relative;
+  }
   .modal {
-    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center;
+    display: none; 
+    position: fixed; 
+    top: 0; left: 0; 
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6); 
+    z-index: 1000; 
+    align-items: center; 
+    justify-content: center;
+    padding: 16px;
   }
   .modal.show { display: flex; }
   .modal-content {
-    background: white; border-radius: 20px; padding: 32px; text-align: center;
-    max-width: 360px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    background: white; 
+    border-radius: clamp(16px, 3vw, 24px); 
+    padding: clamp(20px, 5vw, 36px); 
+    text-align: center;
+    max-width: 360px; 
+    width: 100%; 
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
   }
-  .modal-content h2 { margin: 0 0 12px; }
+  .modal-content h2 { 
+    margin: 0 0 12px; 
+    font-size: clamp(18px, 4vw, 24px);
+  }
+  .modal-content p {
+    font-size: clamp(14px, 3vw, 16px);
+  }
   .modal-content.alarm h2 { color: #e85d2c; }
   .modal-content.care h2 { color: #6f8f71; }
   .modal-content.fall h2 { color: #4a90d9; }
+  .modal-icon { font-size: clamp(36px, 8vw, 56px); }
+  
+  @media (max-width: 480px) {
+    .cards { grid-template-columns: 1fr 1fr; }
+    .section { padding: 12px; }
+    table { font-size: 13px; }
+  }
+  
+  @media (max-width: 360px) {
+    .cards { grid-template-columns: 1fr; }
+    button { width: 100%; margin: 4px 0; }
+  }
 </style>
 </head>
 <body>
 <div class="container">
   <div class="header">
-    <div style="font-size:48px;">🧡</div>
+    <div class="icon">🧡</div>
     <h1>心連心智能平安鐘</h1>
   </div>
 
@@ -117,7 +215,7 @@
 
 <div class="modal" id="alarmModal">
   <div class="modal-content alarm">
-    <div style="font-size: 48px;">🚨</div>
+    <div class="modal-icon">🚨</div>
     <h2>緊急警報！</h2>
     <p>偵測到跌倒事件，請確認長者狀況。</p>
     <button class="btn-cancel" onclick="confirmCancel()">✅ 確認取消警報</button>
@@ -127,7 +225,7 @@
 
 <div class="modal" id="careModal">
   <div class="modal-content care">
-    <div style="font-size: 48px;">💚</div>
+    <div class="modal-icon">💚</div>
     <h2>收到關懷</h2>
     <p>長者發送了關懷訊號。</p>
     <button class="btn-care" onclick="closeCareModal()">✅ 知道了</button>
@@ -136,7 +234,7 @@
 
 <div class="modal" id="fallModal">
   <div class="modal-content fall">
-    <div style="font-size: 48px;">🔔</div>
+    <div class="modal-icon">🔔</div>
     <h2 id="fallModalTitle">跌倒偵測</h2>
     <p id="fallModalText">狀態已變更</p>
     <button class="btn-secondary" onclick="closeFallModal()">✅ 知道了</button>
@@ -271,7 +369,22 @@ function renderData() {
         { label: "關懷", data: chartDates.map(d => allDaily[d]?.care || 0), borderColor: "#6f8f71", tension: 0.3, fill: false }
       ]
     },
-    options: { responsive: true, maintainAspectRatio: false }
+    options: { 
+      responsive: true, 
+      maintainAspectRatio: false,
+      plugins: { legend: { position: "bottom" } },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1,
+            callback: function(value) {
+              if (Number.isInteger(value)) return value;
+            }
+          }
+        }
+      }
+    }
   });
 }
 
