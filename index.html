@@ -226,7 +226,26 @@ let events = [
   ["2026-11-10 08:15","FALL_OFF"],["2026-11-11 16:00","CARE"],["2026-11-12 10:30","EMERGENCY"],
   ["2026-11-12 10:35","CANCEL"]
 ].map(([time,type]) => ({time,type}));
-let chart, seen = { alarm:false, care:0, ready:false }, detectOn = false, known = null;
+let chart, seen = { alarm:false, care:0, ready:false };
+
+function normalizeKind(raw) {
+  const t = String(raw).toUpperCase().replace(/[\s_]/g, "");
+  if (t === "FALLON") return "FALL_ON";
+  if (t === "FALLOFF") return "FALL_OFF";
+  if (t === "EMERGENCY" || t === "CANCEL" || t === "CARE") return t;
+  return "";
+}
+function eventTime(raw) {
+  const day = parseLoose(raw);
+  if (!day) return "";
+  const clock = String(raw).match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+  if (!clock) return day + " 00:00";
+  let hour = Number(clock[1]);
+  const ap = (clock[3] || "").toUpperCase();
+  if (ap === "PM" && hour < 12) hour += 12;
+  if (ap === "AM" && hour === 12) hour = 0;
+  return day + " " + String(hour).padStart(2, "0") + ":" + clock[2];
+}
 
 function parseLoose(raw) {
   const named = String(raw).match(/(\w+)\s+(\d+)\s+(\d+)/);
@@ -259,13 +278,9 @@ function render() {
   document.getElementById("nCare").textContent = n.care;
   document.getElementById("nOk").textContent = n.ok;
   const status = document.getElementById("status");
-  const keys = events.map(e => e.time + "|" + e.type);
-  if (!known) { known = new Set(keys); detectOn = false; }
-  else {
-    const fresh = events.filter(e => !known.has(e.time + "|" + e.type) && (e.type === "FALL_ON" || e.type === "FALL_OFF")).sort((a,b) => a.time < b.time ? -1 : 1);
-    if (fresh.length) detectOn = fresh[fresh.length - 1].type === "FALL_ON";
-    keys.forEach(k => known.add(k));
-  }
+  const falls = events.map((e, i) => ({...e, i})).filter(e => e.type === "FALL_ON" || e.type === "FALL_OFF")
+    .sort((a, b) => a.time === b.time ? a.i - b.i : a.time < b.time ? -1 : 1);
+  const detectOn = falls.length > 0 && falls[falls.length - 1].type === "FALL_ON";
   const detectEl = document.getElementById("detect");
   detectEl.textContent = detectOn ? "開啟" : "關閉";
   detectEl.className = detectOn ? "jade" : "muted";
@@ -319,11 +334,10 @@ async function pull() {
     if (!Array.isArray(data)) return;
     const next = [];
     data.forEach(item => {
-      const type = String(item.type||"").toUpperCase();
-      const day = parseLoose(item.time||"");
-      if (!day || !LABEL[type]) return;
-      const clock = String(item.time).match(/(\d{1,2}):(\d{2})/);
-      next.push({ time: clock ? day + " " + clock[1].padStart(2,"0") + ":" + clock[2] : day + " 00:00", type });
+      const type = normalizeKind(item.type || "");
+      const time = eventTime(item.time || "");
+      if (!time || !type) return;
+      next.push({ time, type });
     });
     if (next.length) events = next;
   } catch (e) {}
@@ -366,7 +380,7 @@ function tick() {
 tick();
 setInterval(tick, 1000);
 pull();
-setInterval(pull, 20000);
+setInterval(pull, 5000);
 let tiltCard = null;
 function clearTilt() {
   if (!tiltCard) return;
