@@ -7,14 +7,28 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   * { box-sizing: border-box; }
-  body { font-family: "Microsoft JhengHei", sans-serif; background: #fdf5eb; margin: 0; padding: 12px; color: #3a2e20; transition: background 0.3s; }
-  body.alarm-flash { animation: flashRed 0.5s infinite; }
-  body.care-flash { animation: flashGreen 0.5s infinite; }
-  @keyframes flashRed { 0%,100% { background: #fdf5eb; } 50% { background: #ffcccc; } }
-  @keyframes flashGreen { 0%,100% { background: #fdf5eb; } 50% { background: #ccffcc; } }
+  body { 
+    font-family: "Microsoft JhengHei", "PingFang TC", sans-serif; 
+    background: #fdf5eb; margin: 0; padding: 12px; color: #3a2e20; 
+  }
   .container { max-width: 900px; margin: 0 auto; }
   .header { text-align: center; margin-bottom: 16px; }
-  h1 { color: #e85d2c; margin: 0; }
+  h1 { color: #e85d2c; margin: 0; font-size: clamp(20px, 5vw, 28px); }
+  .overview { 
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; 
+    background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .overview-item { text-align: center; padding: 12px 8px; border-radius: 12px; }
+  .overview-item.fall { background: #fff5f0; }
+  .overview-item.care { background: #f0fff4; }
+  .overview-item.confirm { background: #f0f8ff; }
+  .overview-item .icon { font-size: 28px; }
+  .overview-item .label { font-size: 13px; color: #9c8770; margin: 4px 0; }
+  .overview-item .count { font-size: 24px; font-weight: bold; }
+  .overview-item.fall .count { color: #e85d2c; }
+  .overview-item.care .count { color: #6f8f71; }
+  .overview-item.confirm .count { color: #4a90d9; }
   .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
   .card { background: white; border-radius: 16px; padding: 16px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
   .card h3 { margin: 0 0 8px; color: #9c8770; font-size: 14px; }
@@ -27,18 +41,18 @@
   table { width: 100%; border-collapse: collapse; }
   th, td { padding: 10px; text-align: center; }
   th { background: #f5c77c; }
-  button { background: #e85d2c; color: white; border: none; padding: 12px 24px; border-radius: 24px; cursor: pointer; margin: 4px; }
-  .btn-cancel { background: #6f8f71; }
-  .btn-secondary { background: #9c8770; }
+  button { background: #e85d2c; color: white; border: none; padding: 12px 24px; border-radius: 24px; cursor: pointer; }
   .footer { text-align: center; color: #9c8770; font-size: 12px; }
   .chart-container { height: 250px; }
   select { padding: 8px 16px; border-radius: 20px; border: 1px solid #f5c77c; }
   .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; }
   .modal.show { display: flex; }
   .modal-content { background: white; border-radius: 20px; padding: 32px; text-align: center; max-width: 360px; width: 90%; }
-  .modal-content h2 { margin: 0 0 12px; }
   .modal-content.alarm h2 { color: #e85d2c; }
   .modal-content.care h2 { color: #6f8f71; }
+  .btn-cancel { background: #6f8f71; }
+  .btn-secondary { background: #9c8770; }
+  @media (max-width: 480px) { .overview { grid-template-columns: 1fr; } .cards { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -47,21 +61,47 @@
     <div style="font-size:48px;">🧡</div>
     <h1>心連心智能平安鐘</h1>
   </div>
+
+  <div class="overview">
+    <div class="overview-item fall">
+      <div class="icon">🏃</div>
+      <div class="label">跌倒事件</div>
+      <div class="count" id="todayFall">0</div>
+      <div class="label">次</div>
+    </div>
+    <div class="overview-item care">
+      <div class="icon">💚</div>
+      <div class="label">關懷訊號</div>
+      <div class="count" id="todayCare">0</div>
+      <div class="label">次</div>
+    </div>
+    <div class="overview-item confirm">
+      <div class="icon">✅</div>
+      <div class="label">安全確認</div>
+      <div class="count" id="todayCancel">0</div>
+      <div class="label">次</div>
+    </div>
+  </div>
+
   <div style="text-align:center; margin-bottom:16px;">
     <select id="monthFilter" onchange="render()"><option value="all">全部月份</option></select>
   </div>
+
   <div class="cards">
     <div class="card"><h3>🔔 跌倒偵測</h3><div id="fallStatus" class="big">載入中</div></div>
     <div class="card"><h3>⚠️ 目前警報</h3><div id="alarmStatus" class="big">載入中</div></div>
   </div>
+
   <div class="section">
     <h2 style="text-align:center;">📈 統計</h2>
     <div class="chart-container"><canvas id="chart"></canvas></div>
   </div>
+
   <div class="section">
     <h2>📋 每日紀錄</h2>
     <table><thead><tr><th>日期</th><th>跌倒</th><th>關懷</th></tr></thead><tbody id="tableBody"></tbody></table>
   </div>
+
   <div style="text-align:center;"><button onclick="load()">🔄 重新整理</button></div>
   <div class="footer" id="updateTime"></div>
 </div>
@@ -88,7 +128,7 @@
 <script>
 const API = "https://script.google.com/macros/s/AKfycbzi-W6qVuU0KA58SYckbRaL4RSSDFcdRP8P57ejqqnfk7U3GyiJb_JU79X-bSskY-o-Iw/exec";
 let chart, daily = {}, months = new Set();
-let lastAlarming = false, lastCareCount = 0, lastFallOn = null;
+let lastAlarming = false, lastCareCount = 0;
 
 function parseDate(s) {
   const m = s.match(/(\w+)\s+(\d+)\s+(\d+)/);
@@ -103,22 +143,16 @@ function weekday(d) {
   return (dt.getMonth()+1) + "/" + dt.getDate() + " (" + "日一二三四五六"[dt.getDay()] + ")";
 }
 
-function showAlarm() { document.getElementById("alarmModal").classList.add("show"); document.body.classList.add("alarm-flash"); }
-function closeAlarm() { document.getElementById("alarmModal").classList.remove("show"); document.body.classList.remove("alarm-flash"); }
-function showCare() { document.getElementById("careModal").classList.add("show"); document.body.classList.add("care-flash"); }
-function closeCare() { document.getElementById("careModal").classList.remove("show"); document.body.classList.remove("care-flash"); }
+function showAlarm() { document.getElementById("alarmModal").classList.add("show"); }
+function closeAlarm() { document.getElementById("alarmModal").classList.remove("show"); }
+function showCare() { document.getElementById("careModal").classList.add("show"); }
+function closeCare() { document.getElementById("careModal").classList.remove("show"); }
 
 async function confirmCancel() {
   try {
     const res = await fetch(API + "?action=cancel&t=" + Date.now());
     const result = await res.json();
-    if (result.success) {
-      closeAlarm();
-      lastAlarming = false;
-      document.getElementById("alarmStatus").textContent = "正常";
-      document.getElementById("alarmStatus").className = "big on";
-      setTimeout(load, 2000);
-    }
+    if (result.success) { closeAlarm(); lastAlarming = false; setTimeout(load, 2000); }
   } catch(e) { alert("取消失敗"); }
 }
 
@@ -129,6 +163,8 @@ async function load() {
     if (!Array.isArray(data)) throw new Error("not array");
 
     let fallOn = false, alarming = false, totalCare = 0;
+    let todayFall = 0, todayCare = 0, todayCancel = 0;
+    const today = new Date().toISOString().split("T")[0];
     daily = {}; months = new Set();
 
     data.forEach(item => {
@@ -141,10 +177,14 @@ async function load() {
       
       if (type === "FALLON") fallOn = true;
       if (type === "FALLOFF") fallOn = false;
-      if (type === "EMERGENCY") { alarming = true; daily[date].fall++; }
-      if (type === "CANCEL") alarming = false;
-      if (type === "CARE") { daily[date].care++; totalCare++; }
+      if (type === "EMERGENCY") { alarming = true; daily[date].fall++; if (date === today) todayFall++; }
+      if (type === "CANCEL") { alarming = false; if (date === today) todayCancel++; }
+      if (type === "CARE") { daily[date].care++; totalCare++; if (date === today) todayCare++; }
     });
+
+    document.getElementById("todayFall").textContent = todayFall;
+    document.getElementById("todayCare").textContent = todayCare;
+    document.getElementById("todayCancel").textContent = todayCancel;
 
     document.getElementById("fallStatus").textContent = fallOn ? "開啟" : "關閉";
     document.getElementById("fallStatus").className = "big " + (fallOn ? "on" : "off");
@@ -154,7 +194,6 @@ async function load() {
     if (alarming && !lastAlarming) showAlarm();
     lastAlarming = alarming;
     if (!alarming) closeAlarm();
-
     if (totalCare > lastCareCount && lastCareCount > 0) showCare();
     lastCareCount = totalCare;
 
