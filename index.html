@@ -2,245 +2,396 @@
 <html lang="zh-HK">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>心連心智能平安鐘</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-  * { box-sizing: border-box; }
-  body { 
-    font-family: "Microsoft JhengHei", "PingFang TC", sans-serif; 
-    background: #fdf5eb; margin: 0; padding: 12px; color: #3a2e20; 
+  :root {
+    --fg:#3a2a22; --muted:#8a7264; --ember:#e15a2b; --jade:#3f8f6a;
+    --gold:#c9843a; --line:#ead3b8; --surface:#fff8ef;
   }
-  .container { max-width: 900px; margin: 0 auto; }
-  .header { text-align: center; margin-bottom: 16px; }
-  h1 { color: #e85d2c; margin: 0; font-size: clamp(20px, 5vw, 28px); }
-  .overview { 
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; 
-    background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  * { box-sizing:border-box; }
+  body {
+    margin:0; color:var(--fg); font-family:"Noto Sans TC",sans-serif;
+    background:
+      radial-gradient(42rem 28rem at 82% -10%, rgba(255,196,120,.95), transparent 60%),
+      radial-gradient(28rem 22rem at 8% 18%, rgba(255,150,110,.45), transparent 62%),
+      radial-gradient(24rem 20rem at 70% 88%, rgba(120,176,140,.28), transparent 60%),
+      linear-gradient(165deg,#fff4e6,#f6dcc4 48%,#f3cbb4);
+    min-height:100vh;
   }
-  .overview-item { text-align: center; padding: 12px 8px; border-radius: 12px; }
-  .overview-item.fall { background: #fff5f0; }
-  .overview-item.care { background: #f0fff4; }
-  .overview-item.confirm { background: #f0f8ff; }
-  .overview-item .icon { font-size: 28px; }
-  .overview-item .label { font-size: 13px; color: #9c8770; margin: 4px 0; }
-  .overview-item .count { font-size: 24px; font-weight: bold; }
-  .overview-item.fall .count { color: #e85d2c; }
-  .overview-item.care .count { color: #6f8f71; }
-  .overview-item.confirm .count { color: #4a90d9; }
-  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-  .card { background: white; border-radius: 16px; padding: 16px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-  .card h3 { margin: 0 0 8px; color: #9c8770; font-size: 14px; }
-  .big { font-size: 24px; font-weight: bold; }
-  .on { color: #6f8f71; }
-  .off { color: #9c8770; }
-  .emergency { color: #e85d2c; animation: pulse 1s infinite; }
-  @keyframes pulse { 50% { opacity: 0.5; } }
-  .section { background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; }
-  table { width: 100%; border-collapse: collapse; }
-  th, td { padding: 10px; text-align: center; }
-  th { background: #f5c77c; }
-  button { background: #e85d2c; color: white; border: none; padding: 12px 24px; border-radius: 24px; cursor: pointer; }
-  .footer { text-align: center; color: #9c8770; font-size: 12px; }
-  .chart-container { height: 250px; }
-  select { padding: 8px 16px; border-radius: 20px; border: 1px solid #f5c77c; }
-  .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; }
-  .modal.show { display: flex; }
-  .modal-content { background: white; border-radius: 20px; padding: 32px; text-align: center; max-width: 360px; width: 90%; }
-  .modal-content.alarm h2 { color: #e85d2c; }
-  .modal-content.care h2 { color: #6f8f71; }
-  .btn-cancel { background: #6f8f71; }
-  .btn-secondary { background: #9c8770; }
-  @media (max-width: 480px) { .overview { grid-template-columns: 1fr; } .cards { grid-template-columns: 1fr; } }
+  .mote { position:fixed; border-radius:999px; animation:float 14s linear infinite; pointer-events:none; will-change:transform; }
+  .mote-ember { background:radial-gradient(circle, rgba(225,90,43,.45), rgba(225,90,43,0) 70%); }
+  .mote-gold { background:radial-gradient(circle, rgba(201,132,58,.5), rgba(201,132,58,0) 70%); }
+  .mote-jade { background:radial-gradient(circle, rgba(63,143,106,.35), rgba(63,143,106,0) 70%); }
+  .rays { position:fixed; left:10%; top:-40%; width:90rem; height:90rem; pointer-events:none; will-change:transform;
+    background:repeating-conic-gradient(from 0deg, rgba(255,214,150,.34) 0deg 8deg, transparent 8deg 22deg);
+    mask-image:radial-gradient(circle,#000 0%, transparent 68%); animation:spin 48s linear infinite; }
+  .spark { position:fixed; width:18px; height:18px; border-radius:999px; pointer-events:none; will-change:transform,opacity;
+    background:radial-gradient(circle, #fff6e8 0%, rgba(255,196,120,.85) 35%, rgba(255,196,120,0) 70%);
+    animation:twinkle 3.2s linear infinite; }
+  .grain { position:fixed; inset:0; pointer-events:none; opacity:.12;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E"); }
+  .anim-off .mote, .anim-off .rays, .anim-off .spark { animation-play-state:paused; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @keyframes float { 50% { transform:translate3d(24px,-36px,0); } }
+  @keyframes twinkle { 0%,100% { opacity:.2; transform:scale(.6); } 50% { opacity:1; transform:scale(1); } }
+  .tile { position:relative; overflow:hidden; touch-action:manipulation;
+    transform:perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transition:transform .28s ease, border-color .22s ease, box-shadow .22s ease; }
+  .tile.tilting { transform:perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) scale(1.03); transition:transform .04s linear, border-color .22s ease; }
+  .tile::after { content:""; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(115deg, transparent 30%, rgba(255,255,255,.55) 48%, transparent 62%);
+    transform:translateX(-120%); }
+  .tile:hover::after { transform:translateX(120%); transition:transform .7s ease; }
+  .tile::before { content:""; position:absolute; inset:0; opacity:0; transition:opacity .2s; pointer-events:none; }
+  .tile-ember::before { background:radial-gradient(circle at 30% 0%, rgba(225,90,43,.35), transparent 62%); }
+  .tile-jade::before { background:radial-gradient(circle at 30% 0%, rgba(63,143,106,.35), transparent 62%); }
+  .tile-gold::before { background:radial-gradient(circle at 30% 0%, rgba(201,132,58,.4), transparent 62%); }
+  .tile-chart::before { background:linear-gradient(180deg, rgba(225,90,43,.12), transparent 40%); }
+  .tile-log::before { background:linear-gradient(180deg, rgba(63,143,106,.14), transparent 46%); }
+  .tile-hero::before { background:radial-gradient(circle at 80% 20%, rgba(255,196,120,.55), transparent 55%); }
+  .tile:hover::before, .tile.tilting::before { opacity:1; }
+  .tile.tilting::before { background:radial-gradient(circle at var(--gx, 50%) var(--gy, 40%), rgba(255,255,255,.75), transparent 46%); }
+  .tile-ember:hover, .tile-ember.tilting { border-color:#e15a2b; box-shadow:0 0 0 2px #e15a2b, 0 24px 40px rgba(225,90,43,.3); }
+  .tile-jade:hover, .tile-jade.tilting { border-color:#3f8f6a; box-shadow:0 0 0 2px #3f8f6a, 0 24px 40px rgba(63,143,106,.3); }
+  .tile-gold:hover, .tile-gold.tilting { border-color:#c9843a; box-shadow:0 0 0 2px #c9843a, 0 24px 40px rgba(201,132,58,.34); }
+  .tile-chart:hover, .tile-chart.tilting { box-shadow:0 24px 48px rgba(225,90,43,.16); }
+  .tile-log:hover, .tile-log.tilting { box-shadow:0 24px 48px rgba(63,143,106,.18); }
+  .tile-hero:hover, .tile-hero.tilting { box-shadow:0 28px 60px rgba(201,132,58,.22); }
+  .refresh { position:fixed; top:1rem; right:1rem; z-index:30; display:inline-flex; align-items:center; gap:.45rem; border-radius:999px; border:1px solid var(--line); background:rgba(255,248,239,.92); padding:.45rem .8rem; font-size:.85rem; color:var(--muted); }
+  .dot { width:.55rem; height:.55rem; border-radius:999px; background:var(--jade); animation:pulse 1.6s ease-in-out infinite; }
+  .toon { position:fixed; z-index:2; pointer-events:none; }
+  .sun { top:4.5rem; left:1rem; width:4.5rem; animation:bob 4s ease-in-out infinite; }
+  .cloud { top:22%; left:16%; width:7rem; animation:bob 6s ease-in-out infinite; }
+  .house { right:1.2rem; bottom:1rem; width:4.2rem; animation:bob 5s ease-in-out infinite; }
+  .buddy { left:.6rem; bottom:1rem; width:3.6rem; animation:bob 3.4s ease-in-out infinite; }
+  .heart { width:1.4rem; animation:rise 8s linear infinite; }
+  @keyframes bob { 50% { transform:translate3d(0,-8px,0); } }
+  @keyframes rise { 0% { transform:translate3d(0,12px,0); opacity:0; } 15% { opacity:.9; } 100% { transform:translate3d(0,-70px,0); opacity:0; } }
+  @keyframes pulse { 50% { transform:scale(.7); opacity:.55; } }
+  .anim-off .toon, .anim-off .dot { animation-play-state:paused; }
+  @media (max-width:640px) { .cloud, .house { display:none; } .refresh { font-size:.75rem; } }
+  .wrap { position:relative; width:min(100%, 64rem); margin:0 auto; padding:2rem 1rem 4rem; }
+  @media (max-width: 64rem) { .wrap { width:64rem; zoom:calc((100vw - 1.25rem) / 64rem); } }
+  .card { background:rgba(255,248,239,.4); border:1px solid var(--line); border-radius:1.75rem; box-shadow:0 18px 50px rgba(160,90,40,.1); }
+  .hero-row { display:flex; align-items:center; justify-content:space-between; gap:2rem; }
+  .hero-copy { max-width:22rem; }
+  h1 { font-size:clamp(2.6rem,5vw,3.4rem); }
+  .clock-block { position:relative; z-index:2; text-align:center; flex:0 0 auto; }
+  .face { width:11rem; height:11rem; margin:0 auto; }
+  .face svg { width:100%; height:100%; display:block; filter:drop-shadow(0 10px 16px rgba(180,100,40,.18)); }
+  .digital { margin:.55rem 0 0; font-family:Fraunces,serif; font-size:1.2rem; color:#c45a2a; white-space:nowrap; }
+  .motif { position:absolute; right:.7rem; bottom:.45rem; width:4.2rem; height:4.2rem; overflow:visible; pointer-events:none; }
+  .motif.motif-up { position:relative; inset:auto; width:8.5rem; height:8.5rem; }
+  .rays-mini { transform-box:view-box; transform-origin:center; animation:spin 5s linear infinite; }
+  .wave { transform-box:fill-box; transform-origin:center; animation:ripple 1.8s ease-out infinite; }
+  .wave.late { animation-delay:.9s; }
+  @keyframes ripple { 0% { transform:scale(.3); opacity:.8; } 100% { transform:scale(2.5); opacity:0; } }
+  .anim-off .rays-mini, .anim-off .wave { animation-play-state:paused; }
+  .floaty { animation:bob 3.2s ease-in-out infinite; }
+  .sway { animation:sway 2.4s ease-in-out infinite; transform-origin:50% 0; }
+  @keyframes sway { 50% { transform:rotate(8deg); } }
+  header.card { padding:2.5rem; }
+  .kicker { letter-spacing:.28em; color:var(--ember); font-size:.9rem; margin:0; }
+  h1 { font-family:Fraunces,serif; font-size:clamp(2.6rem,4vw,3.3rem); line-height:.95; margin:.6rem 0 0; }
+  h1 span, .ember { color:var(--ember); }
+  .jade { color:var(--jade); } .gold { color:var(--gold); } .muted { color:var(--muted); }
+  .pill { display:inline-flex; margin-top:1.4rem; border-radius:999px; padding:.5rem 1rem; font-size:.9rem; background:rgba(63,143,106,.15); color:var(--jade); }
+  .pill.bad { background:var(--ember); color:#fff8ef; }
+  .stats { display:grid; gap:.8rem; margin:1.2rem 0; }
+  .pair { grid-template-columns:1fr 1fr; }
+  .trio { grid-template-columns:repeat(3, minmax(0, 1fr)); }
+  .stat { padding:1.25rem; }
+  .stat b { display:block; font-family:Fraunces,serif; font-size:3rem; line-height:1; margin-top:.4rem; }
+  .grid { display:grid; gap:1rem; grid-template-columns:1.4fr .8fr; }
+  .panel { padding:1.25rem; }
+  .panel h2 { font-family:Fraunces,serif; font-size:1.5rem; margin:0; }
+  .head { display:flex; justify-content:space-between; gap:.6rem; align-items:center; flex-wrap:wrap; margin-bottom:.6rem; }
+  select { border:1px solid var(--line); background:var(--surface); border-radius:999px; padding:.5rem 1rem; font:inherit; color:var(--fg); }
+  .chart { height:18rem; }
+  ul { list-style:none; margin:.6rem 0 0; padding:0; }
+  li { display:flex; justify-content:space-between; gap:.8rem; padding:.75rem 0; border-bottom:1px solid var(--line); font-size:.9rem; }
+  .modal { position:fixed; inset:0; display:none; place-items:center; padding:1rem; }
+  .modal.show { display:grid; }
+  .modal.alarm { background:rgba(225,90,43,.25); }
+  .modal.care { background:rgba(63,143,106,.2); }
+  .sheet { width:min(24rem,100%); text-align:center; padding:2rem; background:#fff8ef; }
+  button { border:0; border-radius:999px; padding:.75rem 1.4rem; font:inherit; font-weight:600; cursor:pointer; color:#fff8ef; }
+  .b-ember { background:var(--ember); } .b-jade { background:var(--jade); }
 </style>
 </head>
 <body>
-<div class="container">
-  <div class="header">
-    <div style="font-size:48px;">🧡</div>
-    <h1>心連心智能平安鐘</h1>
-  </div>
-
-  <div class="overview">
-    <div class="overview-item fall">
-      <div class="icon">🏃</div>
-      <div class="label">跌倒事件</div>
-      <div class="count" id="todayFall">0</div>
-      <div class="label">次</div>
+<svg style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffe1a8" stop-opacity="0.95"/>
+      <stop offset="45%" stop-color="#ffb067" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#ffb067" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <g opacity="0.7">
+    <polygon points="980,0 1040,0 760,800" fill="#ffd7a1"/>
+    <polygon points="1080,0 1120,0 980,800" fill="#ffc48a"/>
+    <polygon points="900,0 930,0 520,800" fill="#ffe7c2"/>
+  </g>
+  <circle cx="980" cy="40" r="220" fill="url(#sun)"/>
+  <circle cx="160" cy="180" r="120" fill="#ff8a5b" opacity="0.22"/>
+  <circle cx="420" cy="680" r="160" fill="#7dcea0" opacity="0.2"/>
+</svg>
+<div class="rays"></div>
+<div class="grain"></div>
+<span class="mote mote-ember" style="left:-4%;top:-6%;width:22rem;height:22rem"></span>
+<span class="mote mote-gold" style="right:-6%;top:4%;width:28rem;height:28rem;animation-delay:-4s"></span>
+<span class="mote mote-jade" style="left:28%;bottom:-12%;width:24rem;height:24rem;animation-delay:-8s"></span>
+<span class="spark" style="top:22%;left:18%"></span>
+<span class="spark" style="top:16%;left:62%;animation-delay:-1s"></span>
+<span class="spark" style="top:48%;left:78%;animation-delay:-2s"></span>
+<span class="spark" style="top:70%;left:24%;animation-delay:-1.4s"></span>
+<div class="wrap">
+  <p class="refresh"><span class="dot"></span><span id="updated">最新整理 —</span></p>
+  <svg class="toon sun" viewBox="0 0 80 80"><circle cx="40" cy="40" r="18" fill="#ffd36b"/><g stroke="#f0a63a" stroke-width="4" stroke-linecap="round"><path d="M40 8v8M40 64v8M8 40h8M64 40h8M16 16l6 6M58 58l6 6M64 16l-6 6M22 58l-6 6"/></g><circle cx="34" cy="36" r="2" fill="#3a2a22"/><circle cx="46" cy="36" r="2" fill="#3a2a22"/><path d="M33 44c2 3 12 3 14 0" fill="none" stroke="#3a2a22" stroke-width="2" stroke-linecap="round"/></svg>
+  <svg class="toon cloud" viewBox="0 0 120 60"><ellipse cx="40" cy="36" rx="22" ry="14" fill="#fff"/><ellipse cx="62" cy="30" rx="26" ry="16" fill="#fff"/><ellipse cx="84" cy="36" rx="18" ry="12" fill="#fff"/></svg>
+  <svg class="toon house" viewBox="0 0 90 80"><path d="M10 40 L45 14 L80 40" fill="#e15a2b"/><rect x="22" y="38" width="46" height="32" rx="4" fill="#fff4e4"/><rect x="38" y="50" width="14" height="20" rx="2" fill="#c9843a"/></svg>
+  <svg class="toon buddy" viewBox="0 0 70 80"><circle cx="35" cy="22" r="12" fill="#ffd7b5"/><path d="M18 70c2-18 8-26 17-26s15 8 17 26" fill="#3f8f6a"/><circle cx="31" cy="21" r="1.4" fill="#3a2a22"/><circle cx="39" cy="21" r="1.4" fill="#3a2a22"/></svg>
+  <svg class="toon heart" style="left:18%;bottom:8%" viewBox="0 0 32 32"><path d="M16 28s-10-6.4-10-13a6 6 0 0 1 10-4 6 6 0 0 1 10 4c0 6.6-10 13-10 13z" fill="#e15a2b"/></svg>
+  <svg class="toon heart" style="left:48%;bottom:4%;animation-delay:-3s" viewBox="0 0 32 32"><path d="M16 28s-10-6.4-10-13a6 6 0 0 1 10-4 6 6 0 0 1 10 4c0 6.6-10 13-10 13z" fill="#3f8f6a"/></svg>
+  <header class="card tile tile-hero hero-row">
+    <div class="hero-copy">
+      <p class="kicker">創智關愛 · 共融社區</p>
+      <h1>心連心<br><span>智能平安鐘</span></h1>
+      <p class="muted">一聲關懷，家人就知道你還好。</p>
+      <p class="pill" id="status">家中安好</p>
     </div>
-    <div class="overview-item care">
-      <div class="icon">💚</div>
-      <div class="label">關懷訊號</div>
-      <div class="count" id="todayCare">0</div>
-      <div class="label">次</div>
+    <div class="clock-block">
+      <div class="face" id="face"></div>
+      <p class="digital" id="digital">—</p>
     </div>
-    <div class="overview-item confirm">
-      <div class="icon">✅</div>
-      <div class="label">安全確認</div>
-      <div class="count" id="todayCancel">0</div>
-      <div class="label">次</div>
-    </div>
-  </div>
-
-  <div style="text-align:center; margin-bottom:16px;">
-    <select id="monthFilter" onchange="render()"><option value="all">全部月份</option></select>
-  </div>
-
-  <div class="cards">
-    <div class="card"><h3>🔔 跌倒偵測</h3><div id="fallStatus" class="big">載入中</div></div>
-    <div class="card"><h3>⚠️ 目前警報</h3><div id="alarmStatus" class="big">載入中</div></div>
-  </div>
-
-  <div class="section">
-    <h2 style="text-align:center;">📈 統計</h2>
-    <div class="chart-container"><canvas id="chart"></canvas></div>
-  </div>
-
-  <div class="section">
-    <h2>📋 每日紀錄</h2>
-    <table><thead><tr><th>日期</th><th>跌倒</th><th>關懷</th></tr></thead><tbody id="tableBody"></tbody></table>
-  </div>
-
-  <div style="text-align:center;"><button onclick="load()">🔄 重新整理</button></div>
-  <div class="footer" id="updateTime"></div>
+    <svg class="motif floaty motif-up" viewBox="0 0 40 40"><g class="rays-mini" stroke="#e15a2b" stroke-width="1.2" opacity=".6"><path d="M20 2v8M20 30v8M2 20h8M30 20h8M6 6l6 6M28 28l6 6M34 6l-6 6M12 28l-6 6"/></g><circle class="wave" cx="20" cy="20" r="8" fill="none" stroke="#e15a2b" stroke-width="1.5"/><circle class="wave late" cx="20" cy="20" r="8" fill="none" stroke="#c9843a" stroke-width="1.5"/><path d="M20 34s-12-7.4-12-15a7 7 0 0 1 12-4.6A7 7 0 0 1 32 19c0 7.6-12 15-12 15z" fill="#e15a2b"/></svg>
+  </header>
+  <section class="stats pair">
+    <article class="card stat tile tile-gold"><svg class="motif spin" viewBox="0 0 40 40"><g class="rays-mini" stroke="#e15a2b" stroke-width="1.2" opacity=".6"><path d="M20 2v8M20 30v8M2 20h8M30 20h8M6 6l6 6M28 28l6 6M34 6l-6 6M12 28l-6 6"/></g><circle class="wave" cx="20" cy="20" r="8" fill="none" stroke="#e15a2b" stroke-width="1.5"/><circle class="wave late" cx="20" cy="20" r="8" fill="none" stroke="#c9843a" stroke-width="1.5"/><circle cx="20" cy="20" r="6" fill="none" stroke="#c9843a" stroke-width="2"/><circle cx="20" cy="20" r="12" fill="none" stroke="#c9843a" stroke-width="1.5" opacity=".7"/><circle cx="20" cy="20" r="18" fill="none" stroke="#e15a2b" stroke-width="1.2" opacity=".45"/></svg><div class="muted">跌倒偵測</div><b id="detect" class="muted">關閉</b></article>
+    <article class="card stat tile tile-jade" id="alarmCard"><svg class="motif sway" viewBox="0 0 40 40"><g class="rays-mini" stroke="#e15a2b" stroke-width="1.2" opacity=".6"><path d="M20 2v8M20 30v8M2 20h8M30 20h8M6 6l6 6M28 28l6 6M34 6l-6 6M12 28l-6 6"/></g><circle class="wave" cx="20" cy="20" r="8" fill="none" stroke="#e15a2b" stroke-width="1.5"/><circle class="wave late" cx="20" cy="20" r="8" fill="none" stroke="#c9843a" stroke-width="1.5"/><path d="M20 6c6 0 10 5 10 12v7l3 4H7l3-4v-7c0-7 4-12 10-12z" fill="#e15a2b"/><circle cx="20" cy="33" r="3" fill="#c9843a"/></svg><div class="muted">目前警報</div><b id="alarm" class="jade">沒有警報</b></article>
+  </section>
+  <section class="stats pair">
+    <article class="card stat tile tile-ember"><svg class="motif sway" viewBox="0 0 40 40"><g class="rays-mini" stroke="#e15a2b" stroke-width="1.2" opacity=".6"><path d="M20 2v8M20 30v8M2 20h8M30 20h8M6 6l6 6M28 28l6 6M34 6l-6 6M12 28l-6 6"/></g><circle class="wave" cx="20" cy="20" r="8" fill="none" stroke="#e15a2b" stroke-width="1.5"/><circle class="wave late" cx="20" cy="20" r="8" fill="none" stroke="#c9843a" stroke-width="1.5"/><path d="M20 6c2 8 8 12 8 18a8 8 0 0 1-16 0c0-6 6-10 8-18z" fill="#e15a2b"/></svg><div class="muted" id="monthFallLabel">本月跌倒</div><b class="ember" id="monthFall">0</b></article>
+    <article class="card stat tile tile-jade"><svg class="motif floaty" viewBox="0 0 40 40"><g class="rays-mini" stroke="#e15a2b" stroke-width="1.2" opacity=".6"><path d="M20 2v8M20 30v8M2 20h8M30 20h8M6 6l6 6M28 28l6 6M34 6l-6 6M12 28l-6 6"/></g><circle class="wave" cx="20" cy="20" r="8" fill="none" stroke="#e15a2b" stroke-width="1.5"/><circle class="wave late" cx="20" cy="20" r="8" fill="none" stroke="#c9843a" stroke-width="1.5"/><path d="M20 34s-12-7.4-12-15a7 7 0 0 1 12-4.6A7 7 0 0 1 32 19c0 7.6-12 15-12 15z" fill="#3f8f6a"/></svg><div class="muted" id="monthCareLabel">本月關懷</div><b class="jade" id="monthCare">0</b></article>
+  </section>
+  <section class="stats trio">
+    <article class="card stat tile tile-ember"><svg class="motif sway" viewBox="0 0 40 40"><g class="rays-mini" stroke="#e15a2b" stroke-width="1.2" opacity=".6"><path d="M20 2v8M20 30v8M2 20h8M30 20h8M6 6l6 6M28 28l6 6M34 6l-6 6M12 28l-6 6"/></g><circle class="wave" cx="20" cy="20" r="8" fill="none" stroke="#e15a2b" stroke-width="1.5"/><circle class="wave late" cx="20" cy="20" r="8" fill="none" stroke="#c9843a" stroke-width="1.5"/><path d="M20 6c2 8 8 12 8 18a8 8 0 0 1-16 0c0-6 6-10 8-18z" fill="#e15a2b"/></svg><div class="ember">今日跌倒</div><b class="ember" id="nFall">0</b></article>
+    <article class="card stat tile tile-jade"><svg class="motif floaty" viewBox="0 0 40 40"><g class="rays-mini" stroke="#e15a2b" stroke-width="1.2" opacity=".6"><path d="M20 2v8M20 30v8M2 20h8M30 20h8M6 6l6 6M28 28l6 6M34 6l-6 6M12 28l-6 6"/></g><circle class="wave" cx="20" cy="20" r="8" fill="none" stroke="#e15a2b" stroke-width="1.5"/><circle class="wave late" cx="20" cy="20" r="8" fill="none" stroke="#c9843a" stroke-width="1.5"/><path d="M20 34s-12-7.4-12-15a7 7 0 0 1 12-4.6A7 7 0 0 1 32 19c0 7.6-12 15-12 15z" fill="#3f8f6a"/></svg><div class="jade">今日關懷</div><b class="jade" id="nCare">0</b></article>
+    <article class="card stat tile tile-gold"><svg class="motif floaty" viewBox="0 0 40 40"><g class="rays-mini" stroke="#e15a2b" stroke-width="1.2" opacity=".6"><path d="M20 2v8M20 30v8M2 20h8M30 20h8M6 6l6 6M28 28l6 6M34 6l-6 6M12 28l-6 6"/></g><circle class="wave" cx="20" cy="20" r="8" fill="none" stroke="#e15a2b" stroke-width="1.5"/><circle class="wave late" cx="20" cy="20" r="8" fill="none" stroke="#c9843a" stroke-width="1.5"/><path d="M20 5l12 5v10c0 8-5.2 13-12 15C13.2 33 8 28 8 20V10z" fill="#c9843a"/><path d="M14 20l4 4 8-9" fill="none" stroke="#fff8ef" stroke-width="2.4" stroke-linecap="round"/></svg><div class="gold">安全確認</div><b class="gold" id="nOk">0</b></article>
+  </section>
+  <section class="grid">
+    <article class="card panel tile tile-chart">
+      <svg class="motif spin" viewBox="0 0 40 40"><g class="rays-mini" stroke="#e15a2b" stroke-width="1.2" opacity=".6"><path d="M20 2v8M20 30v8M2 20h8M30 20h8M6 6l6 6M28 28l6 6M34 6l-6 6M12 28l-6 6"/></g><circle class="wave" cx="20" cy="20" r="8" fill="none" stroke="#e15a2b" stroke-width="1.5"/><circle class="wave late" cx="20" cy="20" r="8" fill="none" stroke="#c9843a" stroke-width="1.5"/><circle cx="20" cy="20" r="6" fill="none" stroke="#c9843a" stroke-width="2"/><circle cx="20" cy="20" r="14" fill="none" stroke="#e15a2b" stroke-width="1.4" opacity=".5"/></svg>
+      <div class="head">
+        <h2>日子裡的關懷</h2>
+        <select id="month"></select>
+      </div>
+      <div class="chart"><canvas id="chart"></canvas></div>
+    </article>
+    <article class="card panel tile tile-log">
+      <svg class="motif floaty" viewBox="0 0 40 40"><g class="rays-mini" stroke="#e15a2b" stroke-width="1.2" opacity=".6"><path d="M20 2v8M20 30v8M2 20h8M30 20h8M6 6l6 6M28 28l6 6M34 6l-6 6M12 28l-6 6"/></g><circle class="wave" cx="20" cy="20" r="8" fill="none" stroke="#e15a2b" stroke-width="1.5"/><circle class="wave late" cx="20" cy="20" r="8" fill="none" stroke="#c9843a" stroke-width="1.5"/><path d="M20 34s-12-7.4-12-15a7 7 0 0 1 12-4.6A7 7 0 0 1 32 19c0 7.6-12 15-12 15z" fill="#3f8f6a"/></svg>
+      <h2>最近</h2>
+      <ul id="log"></ul>
+    </article>
+  </section>
 </div>
-
-<div class="modal" id="alarmModal">
-  <div class="modal-content alarm">
-    <div style="font-size:48px;">🚨</div>
-    <h2>緊急警報！</h2>
-    <p>偵測到跌倒事件，請確認長者狀況。</p>
-    <button class="btn-cancel" onclick="confirmCancel()">✅ 確認取消警報</button>
-    <button class="btn-secondary" onclick="closeAlarm()">稍後處理</button>
+<div class="modal alarm" id="alarmModal">
+  <div class="card sheet">
+    <h2 class="ember">請看一看</h2>
+    <p class="muted">剛剛收到跌倒訊號，確認長者平安後再消除。</p>
+    <button class="b-ember" id="ack">確認消除警報</button>
   </div>
 </div>
-
-<div class="modal" id="careModal">
-  <div class="modal-content care">
-    <div style="font-size:48px;">💚</div>
-    <h2>收到關懷</h2>
-    <p>長者發送了關懷訊號。</p>
-    <button class="btn-cancel" onclick="closeCare()">✅ 知道了</button>
+<div class="modal care" id="careModal">
+  <div class="card sheet">
+    <h2 class="jade">收到關懷</h2>
+    <p class="muted">長者剛剛報了平安。</p>
+    <button class="b-jade" id="careOk">知道了</button>
   </div>
 </div>
-
 <script>
 const API = "https://script.google.com/macros/s/AKfycbzi-W6qVuU0KA58SYckbRaL4RSSDFcdRP8P57ejqqnfk7U3GyiJb_JU79X-bSskY-o-Iw/exec";
-let chart, daily = {}, months = new Set();
-let lastAlarming = false, lastCareCount = 0;
+const LABEL = { EMERGENCY:"跌倒", CANCEL:"已確認", CARE:"關懷", FALL_ON:"偵測開啟", FALL_OFF:"偵測關閉" };
+let events = [
+  ["2026-10-08 10:15","FALL_ON"],["2026-10-10 14:20","EMERGENCY"],["2026-10-10 14:25","CANCEL"],
+  ["2026-10-12 09:00","CARE"],["2026-10-15 16:30","CARE"],["2026-10-18 11:45","FALL_OFF"],
+  ["2026-10-20 13:10","EMERGENCY"],["2026-10-20 13:15","CANCEL"],["2026-10-22 07:50","CARE"],
+  ["2026-10-25 15:20","CARE"],["2026-10-28 10:00","FALL_ON"],["2026-11-02 09:30","CARE"],
+  ["2026-11-05 11:00","EMERGENCY"],["2026-11-05 11:05","CANCEL"],["2026-11-08 14:45","CARE"],
+  ["2026-11-10 08:15","FALL_OFF"],["2026-11-11 16:00","CARE"],["2026-11-12 10:30","EMERGENCY"],
+  ["2026-11-12 10:35","CANCEL"]
+].map(([time,type]) => ({time,type}));
+let chart, seen = { alarm:false, care:0, ready:false }, detectOn = false, known = null;
 
-function parseDate(s) {
-  const m = s.match(/(\w+)\s+(\d+)\s+(\d+)/);
-  if (!m) return "";
+function parseLoose(raw) {
+  const named = String(raw).match(/(\w+)\s+(\d+)\s+(\d+)/);
   const mon = {January:"01",February:"02",March:"03",April:"04",May:"05",June:"06",July:"07",August:"08",September:"09",October:"10",November:"11",December:"12"};
-  return m[3] + "-" + (mon[m[1]]||"01") + "-" + m[2].padStart(2,"0");
+  if (named) return named[3] + "-" + (mon[named[1]]||"01") + "-" + named[2].padStart(2,"0");
+  const iso = String(raw).match(/(\d{4})-(\d{2})-(\d{2})/);
+  return iso ? iso[1]+"-"+iso[2]+"-"+iso[3] : "";
 }
-
-function weekday(d) {
-  const dt = new Date(d);
-  if (isNaN(dt)) return d;
-  return (dt.getMonth()+1) + "/" + dt.getDate() + " (" + "日一二三四五六"[dt.getDay()] + ")";
+function weekday(day) {
+  const dt = new Date(day + "T12:00:00");
+  if (Number.isNaN(dt.getTime())) return day.slice(5);
+  return (dt.getMonth()+1) + "/" + dt.getDate() + "（" + "日一二三四五六"[dt.getDay()] + "）";
 }
-
-function showAlarm() { document.getElementById("alarmModal").classList.add("show"); }
-function closeAlarm() { document.getElementById("alarmModal").classList.remove("show"); }
-function showCare() { document.getElementById("careModal").classList.add("show"); }
-function closeCare() { document.getElementById("careModal").classList.remove("show"); }
-
-async function confirmCancel() {
-  try {
-    const res = await fetch(API + "?action=cancel&t=" + Date.now());
-    const result = await res.json();
-    if (result.success) { closeAlarm(); lastAlarming = false; setTimeout(load, 2000); }
-  } catch(e) { alert("取消失敗"); }
+function todayKey() {
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
 }
-
-async function load() {
+function render() {
+  const today = todayKey();
+  let alarming = false, careCount = 0;
+  const n = { fall:0, care:0, ok:0 }, days = {};
+  events.forEach(e => {
+    const day = e.time.slice(0,10);
+    days[day] = days[day] || { fall:0, care:0 };
+    if (e.type === "EMERGENCY") { alarming = true; days[day].fall++; if (day === today) n.fall++; }
+    if (e.type === "CANCEL") { alarming = false; if (day === today) n.ok++; }
+    if (e.type === "CARE") { careCount++; days[day].care++; if (day === today) n.care++; }
+  });
+  document.getElementById("nFall").textContent = n.fall;
+  document.getElementById("nCare").textContent = n.care;
+  document.getElementById("nOk").textContent = n.ok;
+  const status = document.getElementById("status");
+  const keys = events.map(e => e.time + "|" + e.type);
+  if (!known) { known = new Set(keys); detectOn = false; }
+  else {
+    const fresh = events.filter(e => !known.has(e.time + "|" + e.type) && (e.type === "FALL_ON" || e.type === "FALL_OFF")).sort((a,b) => a.time < b.time ? -1 : 1);
+    if (fresh.length) detectOn = fresh[fresh.length - 1].type === "FALL_ON";
+    keys.forEach(k => known.add(k));
+  }
+  const detectEl = document.getElementById("detect");
+  detectEl.textContent = detectOn ? "開啟" : "關閉";
+  detectEl.className = detectOn ? "jade" : "muted";
+  const alarmEl = document.getElementById("alarm");
+  alarmEl.textContent = alarming ? "警報中" : "沒有警報";
+  alarmEl.className = alarming ? "ember" : "jade";
+  status.textContent = (alarming ? "需要立即關心" : "家中安好") + " · 跌倒偵測" + (detectOn ? "開啟" : "關閉");
+  status.className = "pill" + (alarming ? " bad" : "");
+  if (!seen.ready) seen = { alarm:alarming, care:careCount, ready:true };
+  else {
+    if (alarming && !seen.alarm) document.getElementById("alarmModal").classList.add("show");
+    if (!alarming) document.getElementById("alarmModal").classList.remove("show");
+    if (careCount > seen.care) document.getElementById("careModal").classList.add("show");
+    seen.alarm = alarming; seen.care = careCount;
+  }
+  const sel = document.getElementById("month");
+  const cur = sel.value || "all";
+  const months = [...new Set(Object.keys(days).map(d => d.slice(0,7)))].sort().reverse();
+  sel.innerHTML = '<option value="all">全部月份</option>' + months.map(m => `<option value="${m}">${m.slice(0,4)}年${Number(m.slice(5))}月</option>`).join("");
+  if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+  const now = new Date();
+  document.getElementById("updated").textContent = "最新整理 " + now.getFullYear() + "/" + (now.getMonth()+1) + "/" + now.getDate() + " " + String(now.getHours()).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0");
+  const focus = sel.value !== "all" ? sel.value : today.slice(0,7);
+  let mf = 0, mc = 0;
+  Object.keys(days).forEach(d => { if (d.startsWith(focus)) { mf += days[d].fall; mc += days[d].care; } });
+  const tag = focus === today.slice(0,7) ? "本月" : Number(focus.slice(5)) + "月";
+  document.getElementById("monthFallLabel").textContent = tag + "跌倒";
+  document.getElementById("monthCareLabel").textContent = tag + "關懷";
+  document.getElementById("monthFall").textContent = mf;
+  document.getElementById("monthCare").textContent = mc;
+  const picked = Object.keys(days).filter(d => sel.value === "all" || d.startsWith(sel.value)).sort().slice(-14);
+  document.getElementById("log").innerHTML = events.slice().reverse()
+    .filter(e => sel.value === "all" || e.time.startsWith(sel.value)).slice(0,8)
+    .map(e => `<li><span class="muted">${weekday(e.time.slice(0,10))} ${e.time.slice(11)}</span><span class="${e.type==="EMERGENCY"?"ember":e.type==="CARE"?"jade":""}">${LABEL[e.type]||e.type}</span></li>`).join("");
+  if (chart) chart.destroy();
+  chart = new Chart(document.getElementById("chart"), {
+    type:"line",
+    data:{ labels:picked.map(weekday), datasets:[
+      { label:"跌倒", data:picked.map(d => days[d].fall), borderColor:"#e15a2b", tension:.35, borderWidth:3, pointRadius:0 },
+      { label:"關懷", data:picked.map(d => days[d].care), borderColor:"#3f8f6a", tension:.35, borderWidth:3, pointRadius:0 }
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ labels:{ color:"#3a2a22" } } },
+      scales:{ x:{ ticks:{ color:"#8a7264", maxRotation:0 }, grid:{ display:false } },
+               y:{ beginAtZero:true, ticks:{ color:"#8a7264", stepSize:1, precision:0 }, grid:{ color:"#ead3b8" } } } }
+  });
+}
+async function pull() {
   try {
     const res = await fetch(API + "?t=" + Date.now());
     const data = await res.json();
-    if (!Array.isArray(data)) throw new Error("not array");
-
-    let fallOn = false, alarming = false, totalCare = 0;
-    let todayFall = 0, todayCare = 0, todayCancel = 0;
-    const today = new Date().toISOString().split("T")[0];
-    daily = {}; months = new Set();
-
+    if (!Array.isArray(data)) return;
+    const next = [];
     data.forEach(item => {
-      const type = (item.type||"").toUpperCase().replace(/_/g, "");
-      const date = parseDate(item.time||"");
-      if (!date || !type) return;
-      const mk = date.substring(0,7);
-      months.add(mk);
-      if (!daily[date]) daily[date] = {fall:0, care:0};
-      
-      if (type === "FALLON") fallOn = true;
-      if (type === "FALLOFF") fallOn = false;
-      if (type === "EMERGENCY") { alarming = true; daily[date].fall++; if (date === today) todayFall++; }
-      if (type === "CANCEL") { alarming = false; if (date === today) todayCancel++; }
-      if (type === "CARE") { daily[date].care++; totalCare++; if (date === today) todayCare++; }
+      const type = String(item.type||"").toUpperCase();
+      const day = parseLoose(item.time||"");
+      if (!day || !LABEL[type]) return;
+      const clock = String(item.time).match(/(\d{1,2}):(\d{2})/);
+      next.push({ time: clock ? day + " " + clock[1].padStart(2,"0") + ":" + clock[2] : day + " 00:00", type });
     });
-
-    document.getElementById("todayFall").textContent = todayFall;
-    document.getElementById("todayCare").textContent = todayCare;
-    document.getElementById("todayCancel").textContent = todayCancel;
-
-    document.getElementById("fallStatus").textContent = fallOn ? "開啟" : "關閉";
-    document.getElementById("fallStatus").className = "big " + (fallOn ? "on" : "off");
-    document.getElementById("alarmStatus").textContent = alarming ? "緊急！" : "正常";
-    document.getElementById("alarmStatus").className = "big " + (alarming ? "emergency" : "on");
-
-    if (alarming && !lastAlarming) showAlarm();
-    lastAlarming = alarming;
-    if (!alarming) closeAlarm();
-    if (totalCare > lastCareCount && lastCareCount > 0) showCare();
-    lastCareCount = totalCare;
-
-    const sel = document.getElementById("monthFilter");
-    const cur = sel.value;
-    sel.innerHTML = '<option value="all">全部月份</option>';
-    [...months].sort().reverse().forEach(m => {
-      const [y,mo] = m.split("-");
-      sel.innerHTML += `<option value="${m}">${y}年${parseInt(mo)}月</option>`;
-    });
-    if (cur) sel.value = cur;
-
-    render();
-    document.getElementById("updateTime").textContent = "更新：" + new Date().toLocaleTimeString();
-  } catch(e) {
-    document.getElementById("fallStatus").textContent = "錯誤";
-    console.error(e);
-  }
+    if (next.length) events = next;
+  } catch (e) {}
+  render();
 }
-
-function render() {
-  const sel = document.getElementById("monthFilter").value;
-  let dates = Object.keys(daily).sort().reverse();
-  if (sel !== "all") dates = dates.filter(d => d.startsWith(sel));
-
-  const tb = document.getElementById("tableBody");
-  tb.innerHTML = dates.slice(0,30).map(d => 
-    `<tr><td>${weekday(d)}</td><td>${daily[d].fall}</td><td>${daily[d].care}</td></tr>`
-  ).join("");
-
-  const cd = dates.slice(0,14).reverse();
-  if (chart) chart.destroy();
-  chart = new Chart(document.getElementById("chart"), {
-    type: "line",
-    data: {
-      labels: cd.map(d => weekday(d)),
-      datasets: [
-        { label: "跌倒", data: cd.map(d => daily[d]?.fall||0), borderColor: "#e85d2c", tension: 0.3 },
-        { label: "關懷", data: cd.map(d => daily[d]?.care||0), borderColor: "#6f8f71", tension: 0.3 }
-      ]
-    },
-    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
-  });
+document.getElementById("month").onchange = render;
+document.getElementById("careOk").onclick = () => document.getElementById("careModal").classList.remove("show");
+document.getElementById("ack").onclick = async () => {
+  document.getElementById("alarmModal").classList.remove("show");
+  try { await fetch(API + "?action=cancel&t=" + Date.now()); } catch (e) {}
+  setTimeout(pull, 1500);
+};
+function spot(i, radius) {
+  const a = (i * 30 - 90) * Math.PI / 180;
+  return [Math.round(100 + Math.cos(a) * radius), Math.round(100 + Math.sin(a) * radius)];
 }
-
-load();
-setInterval(load, 20000);
+const marks = Array.from({length:12}, (_, i) => {
+  const [x1, y1] = spot(i, 70);
+  const [x2, y2] = spot(i, 78);
+  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#c9843a" stroke-width="${i % 3 === 0 ? 3 : 1.6}" stroke-linecap="round"/>`;
+}).join("");
+const nums = [12,1,2,3,4,5,6,7,8,9,10,11].map((n, i) => {
+  const [x, y] = spot(i, 56);
+  return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="15" font-family="Fraunces, serif" fill="#7a4630">${n}</text>`;
+}).join("");
+document.getElementById("face").innerHTML = `<svg viewBox="0 0 200 200"><defs><radialGradient id="faceGlow" cx="50%" cy="40%" r="65%"><stop offset="0%" stop-color="#fffdf8"/><stop offset="100%" stop-color="#ffd7ae"/></radialGradient><linearGradient id="bezel" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffe1b0"/><stop offset="45%" stop-color="#e3923d"/><stop offset="100%" stop-color="#b85a28"/></linearGradient></defs><circle cx="100" cy="100" r="96" fill="url(#bezel)"/><circle cx="100" cy="100" r="86" fill="url(#faceGlow)"/><circle cx="100" cy="100" r="78" fill="none" stroke="#f6d3aa" stroke-width="2"/>${marks}${nums}<g id="hands"></g></svg>`;
+function tick() {
+  const now = new Date();
+  const h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+  const h12 = h % 12 || 12;
+  const period = h < 12 ? "上午" : "下午";
+  const p = (n) => String(n).padStart(2, "0");
+  document.getElementById("hands").innerHTML =
+    `<line x1="100" y1="112" x2="100" y2="62" stroke="#5c3b2e" stroke-width="5" stroke-linecap="round" transform="rotate(${(h % 12) * 30 + m * 0.5} 100 100)"/>` +
+    `<line x1="100" y1="114" x2="100" y2="42" stroke="#c9843a" stroke-width="3.5" stroke-linecap="round" transform="rotate(${m * 6 + s * 0.1} 100 100)"/>` +
+    `<line x1="100" y1="122" x2="100" y2="34" stroke="#e15a2b" stroke-width="1.6" stroke-linecap="round" transform="rotate(${s * 6} 100 100)"/>` +
+    `<circle cx="100" cy="100" r="5" fill="#fffaf3" stroke="#e15a2b" stroke-width="3"/>`;
+  document.getElementById("digital").textContent = period + " " + h12 + "時" + p(m) + "分" + p(s) + "秒";
+}
+tick();
+setInterval(tick, 1000);
+pull();
+setInterval(pull, 20000);
+let tiltCard = null;
+function clearTilt() {
+  if (!tiltCard) return;
+  tiltCard.classList.remove("tilting");
+  tiltCard = null;
+}
+function applyTilt(event) {
+  const tile = event.target.closest && event.target.closest(".tile");
+  if (tiltCard && tiltCard !== tile) tiltCard.classList.remove("tilting");
+  tiltCard = tile;
+  if (!tile) return;
+  const box = tile.getBoundingClientRect();
+  const px = (event.clientX - box.left) / box.width;
+  const py = (event.clientY - box.top) / box.height;
+  tile.style.setProperty("--rx", ((py - 0.5) * 10).toFixed(2) + "deg");
+  tile.style.setProperty("--ry", ((0.5 - px) * 12).toFixed(2) + "deg");
+  tile.style.setProperty("--gx", (px * 100).toFixed(0) + "%");
+  tile.style.setProperty("--gy", (py * 100).toFixed(0) + "%");
+  tile.classList.add("tilting");
+}
+window.addEventListener("pointermove", applyTilt);
+window.addEventListener("pointerdown", applyTilt);
+window.addEventListener("pointerup", clearTilt);
+window.addEventListener("pointercancel", clearTilt);
+document.addEventListener("visibilitychange", () => document.documentElement.classList.toggle("anim-off", document.hidden));
 </script>
 </body>
 </html>
